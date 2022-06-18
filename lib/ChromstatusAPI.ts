@@ -12,7 +12,7 @@ export class ChromstatusAPI {
       return new URL(`${path}?${paramStr}`, `${this.#base}/${this.#version}/`).toString()
     }
 
-    return new URL(path, `${this.#base}/${this.#version}`).toString()
+    return new URL(path, `${this.#base}/${this.#version}/`).toString()
   }
 
   #safeParse (text: string) {
@@ -37,11 +37,11 @@ export class ChromstatusAPI {
       return await resp.text().then((text) => this.#safeParse(text))
     }
 
-    console.log(resp.status, resp.statusText)
-
     return null
   }
 
+  async channels (): Promise<ChannelDetails>
+  async channels (params: ChannelsParams): Promise<MilestoneDetails>
   async channels (params?: ChannelsParams) {
     return await this.#request("channels", 200, params)
   }
@@ -67,4 +67,30 @@ interface FeatureDetails {
   "Browser Intervention": ChromestatusFeatureDetail[]
   "Origin trial": ChromestatusFeatureDetail[]
   "In developer trial (Behind a flag)": ChromestatusFeatureDetail[]
+}
+
+interface ChannelDetails {
+  "canary_asan": MilestoneDetail
+  "canary": MilestoneDetail
+  "dev": MilestoneDetail
+  "beta": MilestoneDetail
+  "stable": MilestoneDetail
+}
+
+type MilestoneDetails = Record<number, MilestoneDetail>
+
+export interface MilestoneDetail {
+  branch_point: string;
+  earliest_beta: string;
+  earliest_beta_ios: string;
+  final_beta: string;
+  final_beta_cut: string;
+  late_stable_string: string;
+  latest_beta: string;
+  mstone: number;
+  stable_cut: string;
+  stable_cut_ios: string;
+  stable_string: string;
+  stable_refresh_first: string;
+  version: number;
 }
