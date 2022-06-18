@@ -1,74 +1,3 @@
-export interface Created {
-  by: string;
-  when: string;
-}
-
-export interface Updated {
-  by: string;
-  when: string;
-}
-
-export interface Status {
-  text: string;
-  val: number;
-}
-
-export interface Maturity {
-  text: string;
-  short_text: string;
-  val: number;
-}
-
-export interface Standards {
-  spec: string;
-  status: Status;
-  maturity: Maturity;
-}
-
-export interface Resources {
-  docs: string[];
-}
-
-export interface Status2 {
-  text: string;
-  val: number;
-  milestone_str: string;
-}
-
-export interface Chrome {
-  bug: string;
-  blink_components: string[];
-  owners: string[];
-  origintrial: boolean;
-  intervention: boolean;
-  prefixed: boolean;
-  flag: boolean;
-  status: Status2;
-  desktop: number;
-  android: number;
-  webview: number;
-}
-
-export interface View {
-  text: string;
-  val: number;
-  url?: string;
-  notes?: string;
-}
-
-export interface Browser {
-  view: View;
-}
-
-export interface Browsers {
-  chrome: Chrome;
-  ff: Browser;
-  edge: Browser;
-  safari: Browser;
-  webdev: Browser;
-  other: Browser;
-}
-
 export interface ChromestatusFeatureDetail {
   activation_risks: string;
   all_platforms: boolean;
@@ -107,9 +36,63 @@ export interface ChromestatusFeatureDetail {
   id: number;
   feature_type_int: number;
   intent_stage_int: number;
-  created: Created;
-  updated: Updated;
+  created: TimeRecord;
+  updated: TimeRecord;
   standards: Standards;
-  resources: Resources;
-  browsers: Browsers;
+  resources: {
+    docs: string[];
+  };
+  browsers: {
+    chrome: Chrome;
+    ff: Browser;
+    edge: Browser;
+    safari: Browser;
+    webdev: Browser;
+    other: Browser;
+  };
+}
+
+interface TimeRecord {
+  by: string;
+  when: string;
+}
+
+interface Standards {
+  spec: string;
+  status: {
+    text: string;
+    val: number;
+  };
+  maturity: {
+    text: string;
+    short_text: string;
+    val: number;
+  };
+}
+
+interface Chrome {
+  bug: string;
+  blink_components: string[];
+  owners: string[];
+  origintrial: boolean;
+  intervention: boolean;
+  prefixed: boolean;
+  flag: boolean;
+  status: {
+    text: string;
+    val: number;
+    milestone_str: string;
+  };
+  desktop: number;
+  android: number;
+  webview: number;
+}
+
+interface Browser {
+  view: {
+    text: string;
+    val: number;
+    url?: string;
+    notes?: string;
+  };
 }
