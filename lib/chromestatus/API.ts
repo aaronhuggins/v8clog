@@ -52,11 +52,11 @@ export class ChromstatusAPI {
   }
 }
 
-interface ChannelsParams {
+export interface ChannelsParams {
   start: number
   end: number
 }
 
-interface FeaturesParams {
+export interface FeaturesParams {
   milestone: number
 }
