@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { ChromestatusFeatureDetail } from "./FeatureDetail.ts";
+import { FeatureDetails } from "./FeatureDetails.ts";
 
 export class ChromstatusAPI {
   #base = "https://chromestatus.com/api"
@@ -58,15 +58,6 @@ interface ChannelsParams {
 
 interface FeaturesParams {
   milestone: number
-}
-
-interface FeatureDetails {
-  "Enabled by default": ChromestatusFeatureDetail[]
-  Deprecated: ChromestatusFeatureDetail[]
-  Removed: ChromestatusFeatureDetail[]
-  "Browser Intervention": ChromestatusFeatureDetail[]
-  "Origin trial": ChromestatusFeatureDetail[]
-  "In developer trial (Behind a flag)": ChromestatusFeatureDetail[]
 }
 
 interface ChannelDetails {
