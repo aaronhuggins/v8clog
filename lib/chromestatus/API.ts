@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { ChromestatusFeatureDetail } from "./ChromestatusFeatureDetail.ts";
+import { ChromestatusFeatureDetail } from "./FeatureDetail.ts";
 
 export class ChromstatusAPI {
   #base = "https://chromestatus.com/api"
