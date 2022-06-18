@@ -1,4 +1,13 @@
-export interface ChromestatusFeatureDetail {
+export interface FeatureDetails {
+  "Enabled by default": FeatureDetail[]
+  Deprecated: FeatureDetail[]
+  Removed: FeatureDetail[]
+  "Browser Intervention": FeatureDetail[]
+  "Origin trial": FeatureDetail[]
+  "In developer trial (Behind a flag)": FeatureDetail[]
+}
+
+export interface FeatureDetail {
   activation_risks: string;
   all_platforms: boolean;
   all_platforms_descr: string;
