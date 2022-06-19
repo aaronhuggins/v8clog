@@ -19,3 +19,9 @@ None yet
 - Cache parsed content
 - Display changes as pretty and beautiful human-readable posts
 - Provide an RSS feed over the underlying data, with links back to the Clog
+
+## Deployment Strategy
+
+- Build V8 database once every 8 hours (this should catch things like bugfixes, emrgency releases, etc.)
+- Deploy all assets statically to Deno Deploy
+- Serve assets via application on demand
