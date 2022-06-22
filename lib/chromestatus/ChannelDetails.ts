@@ -1,10 +1,6 @@
-export interface ChannelDetails {
-  "canary_asan": MilestoneDetail
-  "canary": MilestoneDetail
-  "dev": MilestoneDetail
-  "beta": MilestoneDetail
-  "stable": MilestoneDetail
-}
+export type Channel = "canary_asan" | "canary" | "dev" | "beta" | "stable"
+
+export type ChannelDetails = Record<Channel, MilestoneDetail>
 
 export type MilestoneDetails = Record<number, MilestoneDetail>
 
@@ -21,5 +17,11 @@ export interface MilestoneDetail {
   stable_cut_ios: string;
   stable_string: string;
   stable_refresh_first: string;
-  version: number;
+  version?: number;
+}
+
+export type V8ChannelDetails = Record<Channel, V8MilestoneDetail>
+
+export interface V8MilestoneDetail extends Omit<MilestoneDetail, "mstone"> {
+  mstone: string
 }
