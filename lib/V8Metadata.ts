@@ -1,4 +1,4 @@
-import { ChannelsParams, ChromstatusAPI } from "./chromestatus/API.ts"
+import { ChromstatusAPI } from "./chromestatus/API.ts"
 import { database } from "./Databases.ts"
 import { IS_DENO_DEPLOY } from "./constants.ts"
 import type { ChannelDetails, MilestoneDetail, V8ChannelDetails, V8MilestoneDetail } from "./chromestatus/ChannelDetails.ts"
@@ -96,6 +96,20 @@ export class V8Metadata {
     return detail
   }
 
+  async milestonesInRange (range: MilestoneRange): Promise<MilestoneDetail[]> {
+    const channels = database.collection.get<MilestoneDetail>("channels")
+    const details = await channels.find({
+      selector: {
+        _id: {
+          $gte: range.start,
+          $lte: range.end
+        }
+      }
+    })
+
+    return details.docs
+  }
+
   async features (version: string): Promise<FeatureDetails> {
     const features = database.collection.get("features")
     const details = await features.get<FeatureDetails>(version)
@@ -113,6 +127,20 @@ export class V8Metadata {
     }
 
     return details
+  }
+
+  async featuresInRange (range: MilestoneRange): Promise<FeatureDetails[]> {
+    const features = database.collection.get<FeatureDetails>("features")
+    const details = await features.find({
+      selector: {
+        _id: {
+          $gte: range.start,
+          $lte: range.end
+        }
+      }
+    })
+
+    return details.docs
   }
 
   async seed (previous = 40) {
@@ -145,4 +173,9 @@ export class V8Metadata {
 
     await channels.upsertAndReplace(database.record.create("latest", releases))
   }
+}
+
+export interface MilestoneRange {
+  start: string;
+  end: string
 }
