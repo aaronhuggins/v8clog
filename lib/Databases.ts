@@ -3,7 +3,7 @@ import PouchDB from "https://deno.land/x/pouchdb_deno@2.1.0-PouchDB+7.3.0/module
 import { PouchDB as IPouchDB } from "https://deno.land/x/pouchdb_deno@2.1.0-PouchDB+7.3.0/modules/pouchdb/mod.ts";
 
 class Database {
-  #collections = new Map<string, IPouchDB.Database>()
+  #collections = new Map<string, IPouchDB.Database<any>>()
 
   constructor (preload: string[] = []) {
     for (const name of preload) {
@@ -13,15 +13,15 @@ class Database {
 
   get collection () {
     return {
-      get: (name: string) => {
+      get: <T = any>(name: string): IPouchDB.Database<T> => {
         return this.collection.create(name)
       },
 
-      create: (name: string) => {
+      create: <T = any>(name: string): IPouchDB.Database<T> => {
         const hasDb = this.#collections.get(name)
         if (hasDb) return hasDb
 
-        const db = new PouchDB(name, {
+        const db = new PouchDB<any>(name, {
           adapter: "idb",
           prefix: "data/",
           systemPath: "data/"
