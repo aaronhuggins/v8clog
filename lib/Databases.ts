@@ -22,7 +22,7 @@ class Database {
         if (hasDb) return hasDb
 
         const db = new PouchDB(name, {
-          adapter: "indexeddb",
+          adapter: "idb",
           prefix: "data/",
           systemPath: "data/"
         })
