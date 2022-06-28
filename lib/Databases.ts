@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
-import PouchDB from "https://deno.land/x/pouchdb_deno@2.1.0-PouchDB+7.3.0/modules/pouchdb/mod.ts";
-import { PouchDB as IPouchDB } from "https://deno.land/x/pouchdb_deno@2.1.0-PouchDB+7.3.0/modules/pouchdb/mod.ts";
+import PouchDB from "https://deno.land/x/pouchdb_deno@2.1.2-PouchDB+7.3.0/modules/pouchdb/mod.ts";
+import { PouchDB as IPouchDB } from "https://deno.land/x/pouchdb_deno@2.1.2-PouchDB+7.3.0/modules/pouchdb/mod.ts";
 
 class Database {
   #collections = new Map<string, IPouchDB.Database<any>>()
