@@ -10,12 +10,12 @@ export interface MilestoneDetail {
   earliest_beta_ios: string;
   final_beta: string;
   final_beta_cut: string;
-  late_stable_string: string;
+  late_stable_date: string;
   latest_beta: string;
   mstone: number;
   stable_cut: string;
   stable_cut_ios: string;
-  stable_string: string;
+  stable_date: string;
   stable_refresh_first: string;
   version?: number;
 }

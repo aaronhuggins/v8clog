@@ -96,15 +96,16 @@ export class V8Metadata {
     return detail
   }
 
-  async milestonesInRange (range: MilestoneRange): Promise<MilestoneDetail[]> {
-    const channels = database.collection.get<MilestoneDetail>("channels")
+  async milestonesInRange (range: MilestoneRange): Promise<V8MilestoneDetail[]> {
+    const channels = database.collection.get<V8MilestoneDetail>("channels")
     const details = await channels.find({
       selector: {
         _id: {
           $gte: range.start,
           $lte: range.end
         }
-      }
+      },
+      sort: [{ "_id": "desc" }]
     })
 
     return details.docs
@@ -137,10 +138,26 @@ export class V8Metadata {
           $gte: range.start,
           $lte: range.end
         }
-      }
+      },
+      sort: [{ "_id": "desc" }]
     })
 
     return details.docs
+  }
+
+  async allDetailsInRange (range: MilestoneRange): Promise<MilestonePair[]> {
+    const details = await this.milestonesInRange(range)
+    const features = await this.featuresInRange(range)
+    const result: MilestonePair[] = []
+
+    for (const [index, detail] of details.entries()) {
+      result.push({
+        detail,
+        features: features[index]
+      })
+    }
+
+    return result
   }
 
   async seed (previous = 40) {
@@ -179,3 +196,5 @@ export interface MilestoneRange {
   start: string;
   end: string
 }
+
+export interface MilestonePair { detail: V8MilestoneDetail; features: FeatureDetails }
