@@ -160,14 +160,13 @@ export class V8Metadata {
     return result
   }
 
-  async seed (previous = 40) {
+  async seed (historical = 80) {
     const api = new ChromstatusAPI()
     const channels = database.collection.get("channels")
     const features = database.collection.get("features")
     const releases = await api.channels()
     const { mstone: stable } = releases.stable
     const upcoming = stable + 4
-    const historical = stable - previous
     const milestones = await api.channels({ start: historical, end: upcoming })
     const entries = Object.entries(milestones)
       .map<[number, MilestoneDetail]>(([milestone, details]) => [Number.parseFloat(milestone), details])
