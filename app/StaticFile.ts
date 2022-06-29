@@ -4,8 +4,8 @@ export class StaticFile {
   isStatic: boolean
   path: string
 
-  constructor (url: string) {
-    const { pathname } = new URL(url)
+  constructor (url: string | URL) {
+    const { pathname } = typeof url === "string" ? new URL(url) : url
     this.isStatic = pathname.startsWith("/static")
     this.path = '.' + pathname
   }
