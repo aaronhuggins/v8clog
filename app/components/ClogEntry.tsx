@@ -12,10 +12,8 @@ import { Milestone } from "./Milestone.tsx";
 export function ClogEntry ({ detail, features }: MilestonePair) {
   const data = new FeatureData(features)
   return (
-    <div class="uk-section uk-background-secondary">
-      <div class="uk-container">
-        <Milestone detail={detail} data={data} />
-      </div>
+    <div class="uk-container">
+      <Milestone detail={detail} data={data} />
     </div>
   )
 }

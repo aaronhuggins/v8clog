@@ -18,15 +18,13 @@ const data = await getData()
 
 export function Home () {
   return (
-    <div class="uk-section uk-background-secondary">
-      <div class="uk-container">
-        { data.map((val) => {
-          const data = new FeatureData(val.features)
-          return (
-            <Milestone detail={val.detail} data={data} />
-          )
-        }) }
-      </div>
+    <div class="uk-container">
+      { data.map((val) => {
+        const data = new FeatureData(val.features)
+        return (
+          <Milestone detail={val.detail} data={data} />
+        )
+      }) }
     </div>
   )
 }

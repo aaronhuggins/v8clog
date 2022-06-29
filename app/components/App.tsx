@@ -30,7 +30,9 @@ export function App ({ active, children }: { active: 'home' | 'clog' | 'none'; c
       </Helmet>
 
       <Header />
-      { children }
+      <div class="uk-section uk-background-secondary">
+        { children }
+      </div>
       <Footer active={active} />
     </div>
   )

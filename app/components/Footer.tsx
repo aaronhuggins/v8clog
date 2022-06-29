@@ -8,7 +8,7 @@ import { h } from "../jsx.ts"
 
 export function Footer ({ active }: { active: 'home' | 'clog' | 'none' }) {
   return (
-    <footer id="footer" class="uk-background-primary" uk-navbar>
+    <footer id="footer" class="uk-background-secondary" uk-navbar>
       <nav class="uk-navbar-center">
         <ul class="uk-navbar-nav">
           <li class={active === 'home' ? "uk-active" : ""}>
