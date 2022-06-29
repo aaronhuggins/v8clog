@@ -101,8 +101,6 @@ export class V8Metadata {
   async milestonesInRange (range: MilestoneRange): Promise<V8MilestoneDetail[]> {
     const channels = database.get<V8MilestoneDetail>("channels")
     const details = await channels.query((doc) => {
-      console.log(Number.parseFloat(doc._id), Number.parseFloat(range.start),
-      Number.parseFloat(doc._id), Number.parseFloat(range.end))
       if (
         Number.parseFloat(doc._id) >= Number.parseFloat(range.start) &&
         Number.parseFloat(doc._id) <= Number.parseFloat(range.end)
