@@ -50,13 +50,13 @@ function MilestoneBody (props: { category: string; featureDetails: FeatureDetail
         featureDetails.map(val => (
           <div class="uk-section uk-padding-small uk-padding-remove-top">
             <h5>{ val.name }</h5>
-            <p class="uk-text-meta uk-margin-remove-top" style={{ whiteSpace: "pre-line" }}>
+            <p class="uk-text-meta uk-margin-remove-top formatted">
               Category: { val.category }{val.flag_name && val.flag_name.startsWith('--') ? `\nFlag name: ${val.flag_name}` : ''}
             </p>
-            <p style={{ whiteSpace: "pre-line" }}>{ val.summary }</p>
+            <p class="uk-light formatted">{ val.summary }</p>
             <details>
               <summary>JSON data</summary>
-              <pre id="code">{JSON.stringify(val, null, 2)}</pre>
+              <pre><code class="json">{JSON.stringify(val, null, 2)}</code></pre>
             </details>
           </div>
         ))

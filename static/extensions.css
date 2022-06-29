@@ -32,3 +32,16 @@ div.logo {
   text-stroke: 1px gray;
   -webkit-text-stroke: 1px gray;
 }
+
+.formatted {
+  white-space: pre-line;
+}
+
+pre {
+  background: rgb(77, 77, 77);
+}
+
+pre > code {
+  max-height: 20em;
+  white-space: pre-wrap;
+}
