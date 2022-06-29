@@ -24,6 +24,8 @@ export function Footer ({ active }: { active: 'home' | 'clog' | 'none' }) {
             <a href="/rss.xml"><span class="uk-margin-small-right uk-icon" uk-icon="rss"></span>Subscribe to feed!</a>
           </li>
         </ul>
+        <span class="uk-margin-small-right uk-icon uk-light" uk-icon="bolt"></span>
+        <p class="uk-light">Made with <a href="https://github.com/aaronhuggins/v8clog">❤️</a> and <a href="https://deno.com/deploy">🦕</a> by <a href="https://twitter.com/AaronHugginsDev">🧔</a></p>
       </nav>
     </footer>
   )
