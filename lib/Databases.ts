@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
-import PouchDB from "https://deno.land/x/pouchdb_deno@2.1.2-PouchDB+7.3.0/modules/pouchdb/mod.ts";
-import { PouchDB as IPouchDB } from "https://deno.land/x/pouchdb_deno@2.1.2-PouchDB+7.3.0/modules/pouchdb/mod.ts";
+import { IS_DENO_DEPLOY } from "./constants.ts";
+import PouchDB from "https://deno.land/x/pouchdb_deno@2.1.3-PouchDB+7.3.0/modules/pouchdb/mod.ts";
+import { PouchDB as IPouchDB } from "https://deno.land/x/pouchdb_deno@2.1.3-PouchDB+7.3.0/modules/pouchdb/mod.ts";
 
 class Database {
   #collections = new Map<string, IPouchDB.Database<any>>()
@@ -46,6 +47,45 @@ class Database {
     }
   }
 }
+
+// if (IS_DENO_DEPLOY) {
+  const fileRidMap = new Map<string, Deno.FsFile>()
+  const ridFileMap = new Map<number, string>()
+  const openSync = Deno.openSync
+  const close = Deno.close
+  const files = [
+    "data/__sysdb__.sqlite",
+    "data/channels.sqlite",
+    "data/channels.sqlite-journal",
+    "data/features.sqlite",
+    "data/features.sqlite-journal"
+  ]
+
+  for (const file of files) {
+    try {
+      const fs = await Deno.open(file, { read: true })
+      fileRidMap.set(file, fs)
+      ridFileMap.set(fs.rid, file)
+    } catch (_err) { /* Don't care */ }
+  }
+
+  Deno.openSync = (path: string | URL, options?: Deno.OpenOptions | undefined) => {
+    const fs = fileRidMap.get(path.toString())
+    if (fs) return fs
+    return openSync(path, options)
+  }
+
+  Deno.close = (rid: number) => {
+    const path = ridFileMap.get(rid)
+    if (path) {
+      console.log(path)
+      // ridFileMap.delete(rid)
+      // fileRidMap.delete(path)
+      return
+    }
+    return close(rid)
+  }
+// }
 
 export const database = new Database([
   "channels",

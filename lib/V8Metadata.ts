@@ -1,5 +1,5 @@
 import { ChromstatusAPI } from "./chromestatus/API.ts"
-import { database } from "./Databases.ts"
+import { database } from "./JSONDB.ts"
 import { IS_DENO_DEPLOY } from "./constants.ts"
 import type { ChannelDetails, MilestoneDetail, V8ChannelDetails, V8MilestoneDetail } from "./chromestatus/ChannelDetails.ts"
 import { FeatureDetail, FeatureDetails } from "./chromestatus/FeatureDetails.ts";
@@ -58,17 +58,18 @@ export class V8Metadata {
   }
 
   async channelDetails (): Promise<V8ChannelDetails> {
-    const channels = database.collection.get("channels")
-    let latest = await channels.get<V8ChannelDetails>("latest")
+    const channels = database.get<V8ChannelDetails>("channels")
+    let latest = await channels.get("latest")
 
     if (!IS_DENO_DEPLOY) {
       const api = new ChromstatusAPI()
       const newest = this.toV8ChannelDetails(await api.channels())
 
       if (newest && newest.stable.mstone !== latest.stable.mstone) {
-        const record = database.record.create("latest", newest)
+        const record = channels.document("latest", newest)
 
-        await channels.upsertAndReplace(record)
+        await channels.put(record)
+        await channels.commit()
 
         latest = record
       }
@@ -78,17 +79,18 @@ export class V8Metadata {
   }
 
   async milestone (version: string): Promise<V8MilestoneDetail> {
-    const channels = database.collection.get("channels")
-    const detail = await channels.get<V8MilestoneDetail>(version)
+    const channels = database.get<V8MilestoneDetail>("channels")
+    const detail = await channels.get(version)
 
     if (!detail && !IS_DENO_DEPLOY) {
       const ver = this.toVersion(version)
       const api = new ChromstatusAPI()
       const details = await api.channels({ start: ver - 1, end: ver })
       const newDetail = this.toV8Milestone(details[ver])
-      const record = database.record.create(newDetail.mstone, newDetail)
+      const record = channels.document(newDetail.mstone, newDetail)
 
       await channels.put(record)
+      await channels.commit()
 
       return newDetail
     }
@@ -97,23 +99,28 @@ export class V8Metadata {
   }
 
   async milestonesInRange (range: MilestoneRange): Promise<V8MilestoneDetail[]> {
-    const channels = database.collection.get<V8MilestoneDetail>("channels")
-    const details = await channels.find({
-      selector: {
-        _id: {
-          $gte: range.start,
-          $lte: range.end
-        }
-      },
-      sort: [{ "_id": "desc" }]
+    const channels = database.get<V8MilestoneDetail>("channels")
+    const details = await channels.query((doc) => {
+      console.log(Number.parseFloat(doc._id), Number.parseFloat(range.start),
+      Number.parseFloat(doc._id), Number.parseFloat(range.end))
+      if (
+        Number.parseFloat(doc._id) >= Number.parseFloat(range.start) &&
+        Number.parseFloat(doc._id) <= Number.parseFloat(range.end)
+      ) {
+        return doc
+      }
     })
 
-    return details.docs
+    return details.sort((a, b) => {
+      if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1
+      if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1
+      return 0
+    })
   }
 
   async features (version: string): Promise<FeatureDetails> {
-    const features = database.collection.get("features")
-    const details = await features.get<FeatureDetails>(version)
+    const features = database.get<FeatureDetails>("features")
+    const details = await features.get(version)
 
     if (!details && !IS_DENO_DEPLOY) {
       const ver = this.toVersion(version)
@@ -121,9 +128,12 @@ export class V8Metadata {
       const newDetails = this.toV8Features(await api.features({ milestone: ver }))
 
       if (newDetails) {
-        const record = database.record.create(version, newDetails)
+        const record = features.document(version, newDetails)
 
         await features.put(record)
+        await features.commit()
+
+        return newDetails
       }
     }
 
@@ -131,18 +141,21 @@ export class V8Metadata {
   }
 
   async featuresInRange (range: MilestoneRange): Promise<FeatureDetails[]> {
-    const features = database.collection.get<FeatureDetails>("features")
-    const details = await features.find({
-      selector: {
-        _id: {
-          $gte: range.start,
-          $lte: range.end
-        }
-      },
-      sort: [{ "_id": "desc" }]
+    const features = database.get<FeatureDetails>("features")
+    const details = await features.query((doc) => {
+      if (
+        Number.parseFloat(doc._id) >= Number.parseFloat(range.start) &&
+        Number.parseFloat(doc._id) <= Number.parseFloat(range.end)
+      ) {
+        return doc
+      }
     })
 
-    return details.docs
+    return details.sort((a, b) => {
+      if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1
+      if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1
+      return 0
+    })
   }
 
   async allDetailsInRange (range: MilestoneRange): Promise<MilestonePair[]> {
@@ -162,8 +175,8 @@ export class V8Metadata {
 
   async seed (historical = 80) {
     const api = new ChromstatusAPI()
-    const channels = database.collection.get("channels")
-    const features = database.collection.get("features")
+    const channels = database.get("channels")
+    const features = database.get("features")
     const releases = await api.channels()
     const { mstone: stable } = releases.stable
     const upcoming = stable + 4
@@ -182,12 +195,13 @@ export class V8Metadata {
       const v8detail = this.toV8Milestone(detail)
       const v8feature = this.toV8Features(feature)
 
-      channels.upsertAndReplace(database.record.create(version, v8detail))
-      features.upsertAndReplace(database.record.create(version, v8feature))
+      channels.put(channels.document(version, v8detail))
+      features.put(features.document(version, v8feature ?? {}))
       await new Promise<void>(resolve => setTimeout(() => resolve(), 300))
     }
 
-    await channels.upsertAndReplace(database.record.create("latest", releases))
+    await channels.put(channels.document("latest", this.toV8ChannelDetails(releases)))
+    await database.commit()
   }
 }
 
