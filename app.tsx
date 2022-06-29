@@ -27,7 +27,7 @@ const App = () => {
         <meta property="og:url" content="${request.url}" />
         <meta property="og:title" content="V8 Clog" />
         <meta property="og:description" content="The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine." />
-        <meta property="og:image" content="/static/v8-outline.svg" />
+        <meta property="og:image" content="/static/v8clog.png" />
       </Helmet>
 
       <Header />
