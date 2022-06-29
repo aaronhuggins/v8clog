@@ -19,7 +19,7 @@ export function Milestone ({ detail, data }: MilestoneInput) {
     <div>
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <div class="uk-card-header">
-          <h3 class="">V8 release v{ detail.mstone }</h3>
+          <h3 class=""><a href={`/clog/${detail.mstone}`}>V8 release v{ detail.mstone }</a></h3>
           <p class="uk-text-meta uk-margin-remove-top">
             Stable date: <time datetime={detail.stable_date}>{ new Date(detail.stable_date).toDateString() }</time>
           </p>
@@ -31,7 +31,9 @@ export function Milestone ({ detail, data }: MilestoneInput) {
         <MilestoneBody category="Browser Intervention" featureDetails={data.browserIntervention} />
         <MilestoneBody category="Origin trial" featureDetails={data.originTrial} />
         <MilestoneBody category="In developer trial behind flag" featureDetails={data.developerTrial} />
-        <div class="uk-card-footer"></div>
+        <div class="uk-card-footer">
+          <p><a href={`/clog/${detail.mstone}`}>Permalink</a></p>
+        </div>
       </div>
       <hr></hr>
     </div>
