@@ -98,6 +98,19 @@ export class V8Metadata {
     return detail
   }
 
+  async allMilestones (): Promise<V8MilestoneDetail[]> {
+    const channels = database.get<V8MilestoneDetail>("channels")
+    const milestones = await channels.query(doc => {
+      if (doc._id !== "latest") return doc
+    })
+
+    return milestones.sort((a, b) => {
+      if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1
+      if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1
+      return 0
+    })
+  }
+
   async milestonesInRange (range: MilestoneRange): Promise<V8MilestoneDetail[]> {
     const channels = database.get<V8MilestoneDetail>("channels")
     const details = await channels.query((doc) => {

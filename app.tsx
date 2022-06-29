@@ -13,6 +13,7 @@ import { StaticFile } from "./app/StaticFile.ts"
 import { V8Metadata } from "./lib/V8Metadata.ts";
 import { App } from "./app/components/App.tsx";
 import { ClogEntry } from "./app/components/ClogEntry.tsx";
+import { Clog } from "./app/components/Clog.tsx";
 
 const pattern = new URLPattern({ pathname: "/clog/:version" })
 
@@ -20,7 +21,7 @@ serve(async function server (request) {
   const url = new URL(request.url)
   const file = new StaticFile(url)
 
-  if (url.pathname.startsWith("/clog")) {
+  if (url.pathname.startsWith("/clog/")) {
     const parsed = pattern.exec(request.url)
     const metadata = new V8Metadata()
     try {
@@ -36,6 +37,9 @@ serve(async function server (request) {
   switch (file.path) {
     case "./rss.xml": {
       return renderRSS(<RSS />)
+    }
+    case "./clog": {
+      return renderHTML(<App><Clog /></App>)
     }
     case "./": {    
       return renderHTML(<App><Home /></App>)
