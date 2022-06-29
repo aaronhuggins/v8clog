@@ -18,7 +18,7 @@ const data = await getData()
 
 export function Home () {
   return (
-    <div class="uk-section">
+    <div class="uk-section uk-background-secondary">
       <div class="uk-container">
         { data.map((val) => {
           const data = new FeatureData(val.features)

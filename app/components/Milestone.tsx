@@ -17,9 +17,9 @@ interface MilestoneInput {
 export function Milestone ({ detail, data }: MilestoneInput) {
   return (
     <div>
-      <div class="uk-card uk-card-body uk-card-default">
+      <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <div class="uk-card-header">
-          <h3 class="uk-card-title">V8 release v{ detail.mstone }</h3>
+          <h3 class="">V8 release v{ detail.mstone }</h3>
           <p class="uk-text-meta uk-margin-remove-top">
             Stable date: <time datetime={detail.stable_date}>{ new Date(detail.stable_date).toDateString() }</time>
           </p>
@@ -44,7 +44,7 @@ function MilestoneBody (props: { category: string; featureDetails: FeatureDetail
   if (featureDetails.length === 0) return null
 
   return (
-    <div class="uk-card-body">
+    <div class="uk-card-body uk-background-secondary uk-light">
       <h4>{ category } { featureDetails.length === 0 ? '(None)' : `(${featureDetails.length})`}</h4>
       {
         featureDetails.map(val => (
