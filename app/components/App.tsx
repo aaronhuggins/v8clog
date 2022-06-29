@@ -18,8 +18,8 @@ export function App ({ active, children }: { active: 'home' | 'clog' | 'none'; c
         <body class="root" />
         <body class="main uk-background-secondary" id="main" />
 
-        <title>V8 Clog: The Blog-style Changelog for the JavaScript Engine</title>
-        <meta name="description" content="V8 Clog" />
+        <title>V8 Clog: The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine</title>
+        <meta name="description" content="The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:creator" content="@aaronhugginsdev" />
         <meta name="twitter:image" content="https://v8clog.deno.dev/static/v8clog.png"></meta>

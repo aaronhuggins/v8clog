@@ -36,7 +36,7 @@ serve(async function server (request) {
 
   switch (file.path) {
     case "./rss.xml": {
-      return renderRSS(<RSS />)
+      return renderRSS()
     }
     case "./clog": {
       return renderHTML(<App active="clog"><Clog /></App>)
@@ -50,11 +50,11 @@ serve(async function server (request) {
   }
 })
 
-function renderRSS (input: any) {
-  const rss = '<?xml version="1.0" encoding="utf-8"?>\n' + renderSSR(input)
+function renderRSS () {
+  const rss = RSS()
   return new Response(rss, {
     headers: {
-      "Content-Type": "application/xml",
+      "Content-Type": "application/rss+xml",
       "Cache-Control": "no-cache, no-store"
     }
   })

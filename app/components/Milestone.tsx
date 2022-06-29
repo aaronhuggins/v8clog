@@ -19,18 +19,26 @@ export function Milestone ({ detail, data, style = true }: MilestoneInput) {
             Stable date: <time datetime={detail.stable_date}>{ new Date(detail.stable_date).toDateString() }</time>
           </p>
         </div>
-        { data.hasFeatures ? null : (<div class={style ? "uk-card-body" : ""}><p>No new features in this version.</p></div>) }
-        <MilestoneCategory category="Enabled by default" featureDetails={data.enabled} style={style} />
-        <MilestoneCategory category="Deprecated" featureDetails={data.deprecated} style={style} />
-        <MilestoneCategory category="Removed" featureDetails={data.removed} style={style} />
-        <MilestoneCategory category="Browser Intervention" featureDetails={data.browserIntervention} style={style} />
-        <MilestoneCategory category="Origin trial" featureDetails={data.originTrial} style={style} />
-        <MilestoneCategory category="In developer trial behind flag" featureDetails={data.developerTrial} style={style} />
+        <MilestoneBody data={data} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
           <p><a href={`/clog/${detail.mstone}`}>Permalink</a></p>
         </div>
       </div>
       <hr></hr>
+    </div>
+  )
+}
+
+export function MilestoneBody ({ data, style = true }: Omit<MilestoneInput, 'detail'>) {
+  return (
+    <div>
+      { data.hasFeatures ? null : (<div class={style ? "uk-card-body" : ""}><p>No new features in this version.</p></div>) }
+      <MilestoneCategory category="Enabled by default" featureDetails={data.enabled} style={style} />
+      <MilestoneCategory category="Deprecated" featureDetails={data.deprecated} style={style} />
+      <MilestoneCategory category="Removed" featureDetails={data.removed} style={style} />
+      <MilestoneCategory category="Browser Intervention" featureDetails={data.browserIntervention} style={style} />
+      <MilestoneCategory category="Origin trial" featureDetails={data.originTrial} style={style} />
+      <MilestoneCategory category="In developer trial behind flag" featureDetails={data.developerTrial} style={style} />
     </div>
   )
 }
@@ -66,7 +74,7 @@ function MilestoneCategory ({ category, featureDetails, style = true }: Category
   )
 }
 
-interface MilestoneInput {
+export interface MilestoneInput {
   detail: MilestonePair['detail']
   data: FeatureData
   style?: boolean
