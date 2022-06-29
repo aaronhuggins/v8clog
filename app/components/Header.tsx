@@ -27,6 +27,9 @@ export function Header () {
             <li>
               <a href="https://v8.dev/">v8.dev</a>
             </li>
+            <li>
+              <a href="/rss.xml"><span class="uk-margin-small-right uk-icon" uk-icon="rss"></span></a>
+            </li>
           </ul>
         </div>
       </nav>

@@ -20,6 +20,9 @@ export function Footer ({ active }: { active: 'home' | 'clog' | 'none' }) {
           <li>
             <a href="https://v8.dev/">The Official v8.dev</a>
           </li>
+          <li>
+            <a href="/rss.xml"><span class="uk-margin-small-right uk-icon" uk-icon="rss"></span>Subscribe to feed!</a>
+          </li>
         </ul>
       </nav>
     </footer>
