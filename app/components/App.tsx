@@ -6,10 +6,10 @@
 /// <reference lib="deno.ns" />
 
 import { h, Helmet } from "../jsx.ts"
+import { Footer } from "./Footer.tsx";
 import { Header } from "./Header.tsx";
-import { Home } from "./Home.tsx";
 
-export function App ({ children }: any) {
+export function App ({ active, children }: { active: 'home' | 'clog' | 'none'; children?: any }) {
   return (
     <div>
       <Helmet>
@@ -31,6 +31,7 @@ export function App ({ children }: any) {
 
       <Header />
       { children }
+      <Footer active={active} />
     </div>
   )
 }

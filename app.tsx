@@ -28,7 +28,7 @@ serve(async function server (request) {
       const detail = await metadata.milestone(parsed?.pathname.groups.version ?? '')
       const features = await metadata.features(parsed?.pathname.groups.version ?? '')
   
-      return renderHTML(<App><ClogEntry detail={detail} features={features} /></App>)
+      return renderHTML(<App active="none"><ClogEntry detail={detail} features={features} /></App>)
     } catch (_error) { /* Missing or broken entries should rediect home. */ }
   }
 
@@ -39,10 +39,10 @@ serve(async function server (request) {
       return renderRSS(<RSS />)
     }
     case "./clog": {
-      return renderHTML(<App><Clog /></App>)
+      return renderHTML(<App active="clog"><Clog /></App>)
     }
-    case "./": {    
-      return renderHTML(<App><Home /></App>)
+    case "./": {
+      return renderHTML(<App active="home"><Home /></App>)
     }
     default: {
       return Response.redirect(url.origin, 307)
