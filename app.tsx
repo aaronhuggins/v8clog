@@ -22,6 +22,12 @@ const App = () => {
 
         <title>V8 Clog: The Blog-style Changelog for the JavaScript Engine</title>
         <meta name="description" content="V8 Clog" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:creator" content="@aaronhugginsdev" />
+        <meta property="og:url" content="${request.url}" />
+        <meta property="og:title" content="V8 Clog" />
+        <meta property="og:description" content="The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine." />
+        <meta property="og:image" content="/static/v8-outline.svg" />
       </Helmet>
 
       <Header />
