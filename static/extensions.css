@@ -42,6 +42,9 @@ pre {
 }
 
 pre > code {
-  max-height: 20em;
+  height: 20em;
+  resize: vertical;
+  min-height: 10em;
+  max-height: 50em;
   white-space: pre-wrap;
 }
