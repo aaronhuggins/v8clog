@@ -51,7 +51,7 @@ export function RSS () {
 function RSSItem ({ detail, data }: MilestoneInput) {
   return (
     `<item>
-      <title>V8 release v{ detail.mstone }</title>
+      <title>V8 release v${ detail.mstone }</title>
       <link>https://v8clog.deno.dev/clog/${detail.mstone}</link>
       <guid>https://v8clog.deno.dev/clog/${detail.mstone}</guid>
       <pubDate>${getPubDate(new Date(detail.stable_date))}</pubDate>
