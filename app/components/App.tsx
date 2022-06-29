@@ -29,7 +29,7 @@ export function App ({ active, children }: { active: 'home' | 'clog' | 'none'; c
         <meta property="og:image" content="https://v8clog.deno.dev/static/v8clog.png" />
       </Helmet>
 
-      <Header />
+      <Header active={active} />
       <div class="uk-section uk-background-secondary">
         { children }
       </div>

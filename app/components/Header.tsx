@@ -6,7 +6,7 @@
 
 import { h } from "../jsx.ts"
 
-export function Header () {
+export function Header ({ active }: { active: 'home' | 'clog' | 'none' }) {
   return (
     <header id="header" class="uk-background-primary" uk-navbar>
       <nav class="uk-navbar-center">
@@ -18,10 +18,10 @@ export function Header () {
         </div>
         <div class="uk-navbar-right">
           <ul class="uk-navbar-nav">
-            <li class="uk-active">
+            <li class={active === 'home' ? "uk-active" : ""}>
               <a href="/">Home</a>
             </li>
-            <li>
+            <li class={active === 'clog' ? "uk-active" : ""}>
               <a href="/clog">Clog</a>
             </li>
             <li>
