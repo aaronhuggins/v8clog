@@ -60,3 +60,9 @@ pre > code {
   max-height: 50em;
   white-space: pre-wrap;
 }
+
+#footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
