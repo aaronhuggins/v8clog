@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { h } from "../jsx.ts"
+import { h, Helmet } from "../jsx.ts"
 import { V8Metadata } from "../../backend/V8Metadata.ts"
 import { Milestone } from "./Milestone.tsx"
 import { FeatureData } from "../../backend/FeatureData.ts";
@@ -16,10 +16,24 @@ const getData = async () => {
 }
 const data = await getData()
 
-export function Home () {
+export function Home ({ origin }: { origin: string }) {
+  const name = "V8 Clog"
+  const description = "The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine"
   return (
     <div class="uk-container">
-      <p class="lead uk-text-primary uk-text-large uk-text-center">The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine</p>
+      <Helmet>
+        <title>{name}: {description}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={origin} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:creator" content="@aaronhugginsdev" />
+        <meta name="twitter:image" content={`${origin}/static/v8clog.png`}></meta>
+        <meta property="og:url" content={origin} />
+        <meta property="og:title" content={name} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={`${origin}/static/v8clog.png`} />
+      </Helmet>
+      <p class="lead uk-text-primary uk-text-large uk-text-center">{description}</p>
       { data.map((val) => {
         const data = new FeatureData(val.features)
         return (

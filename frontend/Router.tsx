@@ -55,7 +55,7 @@ export class Router {
 
       switch (route.name) {
         case "/": {
-          return this.#renderHTML(<App active="home"><Home /></App>)
+          return this.#renderHTML(<App active="home"><Home origin={route.url.origin} /></App>)
         }
         case "/about": {
           return this.#renderHTML(<App active="about"><About /></App>)
