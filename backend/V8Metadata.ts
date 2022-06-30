@@ -184,7 +184,7 @@ export class V8Metadata {
     return result
   }
 
-  async seed (historical = 80) {
+  async seed (historical = 70) {
     const api = new ChromstatusAPI()
     const channels = database.get("channels")
     const features = database.get("features")
@@ -201,6 +201,7 @@ export class V8Metadata {
       })
 
     for (const [milestone, detail] of entries) {
+      if (!detail.stable_date) continue
       const version = this.toV8Version(milestone)
       const feature = await api.features({ milestone })
       const v8detail = this.toV8Milestone(detail)
