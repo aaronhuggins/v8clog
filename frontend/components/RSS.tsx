@@ -5,9 +5,9 @@
 /// <reference lib="deno.ns" />
 
 import { h, renderSSR } from "../jsx.ts"
-import { V8Metadata } from "../../lib/V8Metadata.ts"
+import { V8Metadata } from "../../backend/V8Metadata.ts"
 import { MilestoneBody, MilestoneInput } from "./Milestone.tsx";
-import { FeatureData } from "../../lib/FeatureData.ts";
+import { FeatureData } from "../../backend/FeatureData.ts";
 
 const getData = async () => {
   const metadata = new V8Metadata()

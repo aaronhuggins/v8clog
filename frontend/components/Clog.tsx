@@ -5,8 +5,8 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts"
-import { FeatureData } from "../../lib/FeatureData.ts";
-import { V8Metadata } from "../../lib/V8Metadata.ts";
+import { FeatureData } from "../../backend/FeatureData.ts";
+import { V8Metadata } from "../../backend/V8Metadata.ts";
 
 const getData = async () => {
   const metadata = new V8Metadata()

@@ -5,8 +5,8 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts"
-import { FeatureData } from "../../lib/FeatureData.ts";
-import type { MilestonePair } from "../../lib/V8Metadata.ts";
+import { FeatureData } from "../../backend/FeatureData.ts";
+import type { MilestonePair } from "../../backend/V8Metadata.ts";
 import { Milestone } from "./Milestone.tsx";
 
 export function ClogEntry ({ detail, features }: MilestonePair) {
