@@ -30,11 +30,12 @@ export function Clog ({ origin }: { origin: string }) {
                 <a href={`/clog/${val.detail.mstone}`}>V8 release v{val.detail.mstone}</a>
                 <time datetime={val.detail.stable_date}> {new Date(val.detail.stable_date).toDateString()}</time>
                 {
-                  val.features.tags.map(tag => (
+                  val.features.tags.length > 0
+                  ? val.features.tags.map(tag => (
                     <span class="uk-label uk-margin-small-left">{tag}</span>
                   ))
+                  : (<span class="uk-label uk-label-danger uk-margin-small-left">No New Features</span>)
                 }
-                { val.features.tags.length === 0 ? (<span class="uk-label uk-label-danger uk-margin-small-left">No New Features</span>) : null }
               </li>
             ))
           }
