@@ -7,6 +7,24 @@ export class FeatureData {
     this.details = details
   }
 
+  get tags (): string[] {
+    const tags = new Set<string>()
+    const features = [
+      ...this.enabled,
+      ...this.deprecated,
+      ...this.removed,
+      ...this.browserIntervention,
+      ...this.originTrial,
+      ...this.developerTrial
+    ]
+
+    for (const { category } of features) {
+      tags.add(category)
+    }
+
+    return Array.from(tags).sort()
+  }
+
   get hasFeatures (): boolean {
     return this.hasEnabled
       || this.hasDeprecated
