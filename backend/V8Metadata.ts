@@ -99,15 +99,22 @@ export class V8Metadata {
     return detail
   }
 
-  async allMilestones (): Promise<V8MilestoneDetail[]> {
+  async allMilestonePairs (): Promise<MilestonePair[]> {
     const channels = database.get<V8MilestoneDetail>("channels")
-    const milestones = await channels.query(doc => {
-      if (doc._id !== "latest") return doc
-    })
+    const features = database.get<FeatureDetails>("features")
+    const pairs: MilestonePair[] = []
 
-    return milestones.sort((a, b) => {
-      if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1
-      if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1
+    for await (const detail of channels.getAll()) {
+      if (detail._id === "latest") continue
+      const data = new FeatureData(await features.get(detail._id))
+
+      pairs.push({ detail, features: data })
+    }
+
+    // deno-lint-ignore no-explicit-any
+    return pairs.sort((a: any, b: any) => {
+      if (Number.parseFloat(a.detail._id) > Number.parseFloat(b.detail._id)) return -1
+      if (Number.parseFloat(a.detail._id) < Number.parseFloat(b.detail._id)) return 1
       return 0
     })
   }
