@@ -11,9 +11,22 @@ body {
   width: 100%;
 }
 
+.uk-navbar-nav>li:hover>a {
+  color: #c7c7c7;
+  font-weight: bold;
+}
+
+.uk-light .uk-text-meta {
+  color: #e7e5e5;
+}
+
+.uk-background-primary {
+  background: #1963ad;
+}
+
 .uk-light .uk-label {
   color: white;
-  background: #1e87f0;
+  background: #1963ad;
 }
 
 .uk-light .uk-label.uk-label-danger {

@@ -19,13 +19,13 @@ export function App ({ active, children }: { active: ActiveNav; children?: any }
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" type="image/png" href="/static/v8clog.png"></link>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/css/uikit.min.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/styles/a11y-dark.min.css" />
+        <link rel="stylesheet" href="/static/uikit.min.css" />
+        <link rel="stylesheet" href="/static/a11y-dark.min.css" />
         <link rel="stylesheet" href="/static/extensions.css" />
-        <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
-        <script>hljs.highlightAll();</script>
+        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"></script>
+        <script src="/static/highlight.min.js"></script>
+        <script footer>hljs.highlightAll();</script>
       </Helmet>
 
       <Header active={active} />

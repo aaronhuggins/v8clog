@@ -21,7 +21,8 @@ export class Router {
     ['/clog', new URLPattern({ pathname: "/clog/:version" })],
     ['/rss.xml', true],
     ['/static', true],
-    ["/about", true]
+    ["/about", true],
+    ["/robots.txt", true]
   ])
 
   #isRouteName (name: any): name is RouteName {
@@ -74,6 +75,13 @@ export class Router {
           }
           break
         }
+        case "/robots.txt": {
+          return new Response('', {
+            headers: {
+              "Content-Type": "text/plain"
+            }
+          })
+        }
         case "/rss.xml": {
           return this.#renderRSS(route.url.origin)
         }
@@ -122,7 +130,7 @@ export class Router {
   }
 }
 
-type RouteName = "/" | "/clog" | "/static" | "/rss.xml" | "/about"
+type RouteName = "/" | "/clog" | "/static" | "/rss.xml" | "/about" | "/robots.txt"
 
 interface Route<T extends Record<string, any> = Record<string, any>> {
   name: RouteName | null
