@@ -4,13 +4,27 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { h } from "../jsx.ts"
+import { h, Helmet } from "../jsx.ts"
 
-export function About () {
+export function About ({ origin }: { origin: string }) {
+  const name = "About the Clog"
+  const site = "V8 Clog"
   return (
     <div class="uk-container">
+      <Helmet>
+        <title>{name} - {site}</title>
+        <meta name="description" content={name} />
+        <link rel="canonical" href={`${origin}/about`} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:creator" content="@aaronhugginsdev" />
+        <meta name="twitter:image" content={`${origin}/static/v8clog.png`}></meta>
+        <meta property="og:url" content={origin} />
+        <meta property="og:title" content={`${name} - ${site}`} />
+        <meta property="og:description" content={name} />
+        <meta property="og:image" content={`${origin}/static/v8clog.png`} />
+      </Helmet>
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
-        <h3 class="uk-light">About the Clog</h3>
+        <h3 class="uk-light">{name}</h3>
         <p class="uk-text-meta uk-margin-remove-top">Author: <a href="https://github.com/aaronhuggins">Aaron Huggins</a></p>
         <p class="uk-light">
           On June 17, the V8 team at Google <a href="https://v8.dev/blog/discontinuing-release-posts">announced they would be discontinuing release posts</a> via their blog and Twitter. The recommended way of getting at changelogs for V8? Look at the <a href="https://chromestatus.com/roadmap">Chrome Status website</a> for all Chrome changes, and check out the git repository logs. For reasons that I feel are obvious, not everyone who uses the V8 JavaScript engine cares about Google Chrome.

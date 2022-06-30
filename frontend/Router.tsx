@@ -58,7 +58,7 @@ export class Router {
           return this.#renderHTML(<App active="home"><Home origin={route.url.origin} /></App>)
         }
         case "/about": {
-          return this.#renderHTML(<App active="about"><About /></App>)
+          return this.#renderHTML(<App active="about"><About origin={route.url.origin} /></App>)
         }
         case "/clog": {
           if (route.params.version) {
