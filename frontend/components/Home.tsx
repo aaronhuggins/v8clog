@@ -37,9 +37,10 @@ export function Home ({ origin }: { origin: string }) {
       { data.map((val, index) => {
         const featureData = new FeatureData(val.features)
         return (
-          <Milestone detail={val.detail} data={featureData} sep={ index !== data.length - 1} />
+          <Milestone detail={val.detail} data={featureData} sep={ index !== data.length - 1 } />
         )
       }) }
+      <p class="uk-light uk-text-center"><a href="/clog">More releases...</a></p>
     </div>
   )
 }
