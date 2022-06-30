@@ -12,7 +12,7 @@ import { h } from "../jsx.ts"
 export function Milestone ({ detail, data, style = true }: MilestoneInput) {
   return (
     <div>
-      <div class={style ? "uk-card uk-card-body uk-card-default uk-background-secondary uk-light" : ""}>
+      <div class={style ? "uk-card uk-card-body uk-card-default uk-padding-small uk-background-secondary uk-light" : ""}>
         <div class={style ? "uk-card-header" : ""}>
           <h3><a href={`/clog/${detail.mstone}`}>V8 release v{ detail.mstone }</a></h3>
           <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>

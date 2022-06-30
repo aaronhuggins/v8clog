@@ -19,6 +19,7 @@ const data = await getData()
 export function Home () {
   return (
     <div class="uk-container">
+      <p class="lead uk-text-primary uk-text-large uk-text-center">The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine</p>
       { data.map((val) => {
         const data = new FeatureData(val.features)
         return (
