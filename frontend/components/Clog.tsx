@@ -11,7 +11,7 @@ import { Meta } from "./Meta.tsx";
 const getData = async () => {
   const metadata = new V8Metadata()
 
-  return await metadata.allMilestones()
+  return await metadata.allMilestonePairs()
 }
 const data = await getData()
 
@@ -27,8 +27,14 @@ export function Clog ({ origin }: { origin: string }) {
           {
             data.map((val) => (
               <li class="uk-padding-small uk-padding-remove-top v8-clogroll">
-                <a href={`/clog/${val.mstone}`}>V8 release v{val.mstone}</a>
-                <time datetime={val.stable_date}> {new Date(val.stable_date).toDateString()}</time>
+                <a href={`/clog/${val.detail.mstone}`}>V8 release v{val.detail.mstone}</a>
+                <time datetime={val.detail.stable_date}> {new Date(val.detail.stable_date).toDateString()}</time>
+                {
+                  val.features.tags.map(tag => (
+                    <span class="uk-label uk-margin-small-left">{tag}</span>
+                  ))
+                }
+                { val.features.tags.length === 0 ? (<span class="uk-label uk-label-danger uk-margin-small-left">No New Features</span>) : null }
               </li>
             ))
           }
