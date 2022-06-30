@@ -1,4 +1,4 @@
-import { FeatureDetails, FeatureDetail } from "./chromestatus/FeatureDetails.ts";
+import type { FeatureDetails, FeatureDetail } from "./chromestatus/FeatureDetails.ts";
 
 export class FeatureData {
   details: FeatureDetails

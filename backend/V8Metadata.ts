@@ -3,6 +3,7 @@ import { database } from "./JSONDB.ts"
 import { IS_DENO_DEPLOY } from "./constants.ts"
 import type { ChannelDetails, MilestoneDetail, V8ChannelDetails, V8MilestoneDetail } from "./chromestatus/ChannelDetails.ts"
 import { FeatureDetail, FeatureDetails } from "./chromestatus/FeatureDetails.ts";
+import { FeatureData } from "./FeatureData.ts";
 
 export class V8Metadata {
   #categories = [
@@ -129,7 +130,7 @@ export class V8Metadata {
     })
   }
 
-  async features (version: string): Promise<FeatureDetails> {
+  async features (version: string): Promise<FeatureData> {
     const features = database.get<FeatureDetails>("features")
     const details = await features.get(version)
 
@@ -144,14 +145,14 @@ export class V8Metadata {
         await features.put(record)
         await features.commit()
 
-        return newDetails
+        return new FeatureData(newDetails)
       }
     }
 
-    return details
+    return new FeatureData(details)
   }
 
-  async featuresInRange (range: MilestoneRange): Promise<FeatureDetails[]> {
+  async featuresInRange (range: MilestoneRange): Promise<FeatureData[]> {
     const features = database.get<FeatureDetails>("features")
     const details = await features.query((doc) => {
       if (
@@ -166,7 +167,7 @@ export class V8Metadata {
       if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1
       if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1
       return 0
-    })
+    }).map((val) => new FeatureData(val))
   }
 
   async allDetailsInRange (range: MilestoneRange): Promise<MilestonePair[]> {
@@ -222,4 +223,4 @@ export interface MilestoneRange {
   end: string
 }
 
-export interface MilestonePair { detail: V8MilestoneDetail; features: FeatureDetails }
+export interface MilestonePair { detail: V8MilestoneDetail; features: FeatureData }
