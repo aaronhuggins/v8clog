@@ -10,8 +10,7 @@ import { MilestoneBody, MilestoneInput } from "./Milestone.tsx";
 
 const getData = async () => {
   const metadata = new V8Metadata()
-  const latest = await metadata.channelDetails()
-  return await metadata.allDetailsInRange({ start: "8.0", end: latest.canary.mstone })
+  return await metadata.allMilestonePairs()
 }
 const data = await getData()
 const getPubDate = (date: Date) => {
