@@ -75,7 +75,7 @@ export class Router {
           break
         }
         case "/rss.xml": {
-          return this.#renderRSS()
+          return this.#renderRSS(route.url.origin)
         }
         case "/static": {
           const file = new StaticFile(route.url)
@@ -111,8 +111,8 @@ export class Router {
     })
   }
 
-  #renderRSS () {
-    const rss = RSS()
+  #renderRSS (origin: string) {
+    const rss = RSS({ origin })
     return new Response(rss, {
       headers: {
         "Content-Type": "application/rss+xml",

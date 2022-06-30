@@ -29,29 +29,29 @@ const getPubDate = (date: Date) => {
   return parts.join(' ');
 }
 
-export function RSS () {
+export function RSS ({ origin }: { origin: string }) {
   return (
     `<?xml version="1.0" encoding="utf-8"?>
     <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
       <channel>
           <title>V8 Clog</title>
-          <link>https://v8clog.deno.dev</link>
+          <link>${origin}</link>
           <description>The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine.</description>
-          <atom:link href="https://v8clog.deno.dev/rss.xml" rel="self" type="application/rss+xml" />
+          <atom:link href="${origin}/rss.xml" rel="self" type="application/rss+xml" />
           ${
-            data.map(val => RSSItem({ detail: val.detail, data: val.features })).join('')
+            data.map(val => RSSItem({ detail: val.detail, data: val.features, origin })).join('')
           }
       </channel>
     </rss>`
   )
 }
 
-function RSSItem ({ detail, data }: MilestoneInput) {
+function RSSItem ({ detail, data, origin }: MilestoneInput & { origin: string }) {
   return (
     `<item>
       <title>V8 release v${ detail.mstone }</title>
-      <link>https://v8clog.deno.dev/clog/${detail.mstone}</link>
-      <guid>https://v8clog.deno.dev/clog/${detail.mstone}</guid>
+      <link>${origin}/clog/${detail.mstone}</link>
+      <guid>${origin}/clog/${detail.mstone}</guid>
       <pubDate>${getPubDate(new Date(detail.stable_date))}</pubDate>
       ${
         data.hasFeatures
