@@ -13,6 +13,7 @@ body {
 
 .uk-card-default {
   box-shadow: 0 5px 15px white;
+  border-radius: 1em;
 }
 
 .uk-navbar-nav > li.uk-active > a {
