@@ -67,7 +67,7 @@ export class Router {
               const detail = await metadata.milestone(route.params.version)
               const features = await metadata.features(route.params.version)
   
-              return this.#renderHTML(<App active="none"><ClogEntry detail={detail} features={features} /></App>)
+              return this.#renderHTML(<App active="none"><ClogEntry detail={detail} features={features} origin={route.url.origin} /></App>)
             } catch (_error) { /* Missing or broken entries should rediect home. */ }
           } else {
             return this.#renderHTML(<App active="clog"><Clog origin={route.url.origin} /></App>)
