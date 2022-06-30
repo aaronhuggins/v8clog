@@ -15,7 +15,7 @@ export function ClogEntry ({ detail, features, origin }: MilestonePair & { origi
   return (
     <div class="uk-container">
       <Meta origin={origin} name={`V8 release v${detail.mstone}`} path={`/clog/${detail.mstone}`} />
-      <Milestone detail={detail} data={data} />
+      <Milestone detail={detail} data={data} sep={false} />
     </div>
   )
 }

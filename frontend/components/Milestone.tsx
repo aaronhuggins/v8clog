@@ -9,7 +9,7 @@ import type { FeatureData } from "../../backend/FeatureData.ts";
 import type { MilestonePair } from "../../backend/V8Metadata.ts"
 import { h } from "../jsx.ts"
 
-export function Milestone ({ detail, data, style = true }: MilestoneInput) {
+export function Milestone ({ detail, data, style = true, sep = true }: MilestoneInput) {
   return (
     <div>
       <div class={style ? "uk-card uk-card-body uk-card-default uk-padding-small uk-background-secondary uk-light" : ""}>
@@ -24,7 +24,7 @@ export function Milestone ({ detail, data, style = true }: MilestoneInput) {
           <p><a href={`/clog/${detail.mstone}`}>Permalink</a></p>
         </div>
       </div>
-      <hr></hr>
+      { sep ? (<hr></hr>) : null}
     </div>
   )
 }
@@ -78,6 +78,7 @@ export interface MilestoneInput {
   detail: MilestonePair['detail']
   data: FeatureData
   style?: boolean
+  sep?: boolean
 }
 
 interface CategoryInput { category: string; featureDetails: FeatureDetail[]; style?: boolean }

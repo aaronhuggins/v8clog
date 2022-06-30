@@ -34,10 +34,10 @@ export function Home ({ origin }: { origin: string }) {
         <meta property="og:image" content={`${origin}/static/v8clog.png`} />
       </Helmet>
       <p class="lead uk-text-primary uk-text-large uk-text-center">{description}</p>
-      { data.map((val) => {
-        const data = new FeatureData(val.features)
+      { data.map((val, index) => {
+        const featureData = new FeatureData(val.features)
         return (
-          <Milestone detail={val.detail} data={data} />
+          <Milestone detail={val.detail} data={featureData} sep={ index !== data.length - 1} />
         )
       }) }
     </div>
