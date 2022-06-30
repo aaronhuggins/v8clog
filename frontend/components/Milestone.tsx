@@ -18,6 +18,19 @@ export function Milestone ({ detail, data, style = true, sep = true }: Milestone
           <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
             Stable date: <time datetime={detail.stable_date}>{ new Date(detail.stable_date).toDateString() }</time>
           </p>
+          {
+            data.tags.length > 0
+              ? (
+                <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>Tags:
+                  {
+                    data.tags.map(tag => (
+                      <span class="uk-label uk-margin-small-left">{tag}</span>
+                    ))
+                  }
+                </p>
+              )
+              : null
+          }
         </div>
         <MilestoneBody data={data} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
