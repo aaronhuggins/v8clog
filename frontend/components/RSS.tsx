@@ -54,6 +54,11 @@ function RSSItem ({ detail, data }: MilestoneInput) {
       <link>https://v8clog.deno.dev/clog/${detail.mstone}</link>
       <guid>https://v8clog.deno.dev/clog/${detail.mstone}</guid>
       <pubDate>${getPubDate(new Date(detail.stable_date))}</pubDate>
+      ${
+        data.tags.length > 0
+          ? data.tags.map(tag => `<category>${tag}</category>`)
+          : "<category>No New Features</category>"
+      }
       <description>${renderSSR(<MilestoneBody data={data} style={false} />)}</description>
     </item>`
   )
