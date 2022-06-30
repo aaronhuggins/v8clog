@@ -17,7 +17,7 @@ const data = await getData()
 
 export function Clog ({ origin }: { origin: string }) {
   const name = "Clog post archive"
-  const site = "V8 Clog"
+
   return (
     <div class="uk-container">
       <Meta origin={origin} name={name} path="/clog" />
