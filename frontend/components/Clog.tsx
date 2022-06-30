@@ -5,8 +5,8 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts"
-import { FeatureData } from "../../backend/FeatureData.ts";
 import { V8Metadata } from "../../backend/V8Metadata.ts";
+import { Meta } from "./Meta.tsx";
 
 const getData = async () => {
   const metadata = new V8Metadata()
@@ -15,11 +15,14 @@ const getData = async () => {
 }
 const data = await getData()
 
-export function Clog () {
+export function Clog ({ origin }: { origin: string }) {
+  const name = "Clog post archive"
+  const site = "V8 Clog"
   return (
     <div class="uk-container">
+      <Meta origin={origin} name={name} site={site} path="/clog" />
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
-        <h3>Clog post archive</h3>
+        <h3>{name}</h3>
         <ol reversed>
           {
             data.map((val) => (

@@ -70,7 +70,7 @@ export class Router {
               return this.#renderHTML(<App active="none"><ClogEntry detail={detail} features={features} /></App>)
             } catch (_error) { /* Missing or broken entries should rediect home. */ }
           } else {
-            return this.#renderHTML(<App active="clog"><Clog /></App>)
+            return this.#renderHTML(<App active="clog"><Clog origin={route.url.origin} /></App>)
           }
           break
         }
