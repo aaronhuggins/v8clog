@@ -22,4 +22,4 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "v8clog"
-          entrypoint: "./app.tsx"
+          entrypoint: "./app.ts"
