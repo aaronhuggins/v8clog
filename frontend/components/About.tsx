@@ -5,24 +5,13 @@
 /// <reference lib="deno.ns" />
 
 import { h, Helmet } from "../jsx.ts"
+import { Meta } from "./Meta.tsx";
 
 export function About ({ origin }: { origin: string }) {
   const name = "About the Clog"
-  const site = "V8 Clog"
   return (
     <div class="uk-container">
-      <Helmet>
-        <title>{name} - {site}</title>
-        <meta name="description" content={name} />
-        <link rel="canonical" href={`${origin}/about`} />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:creator" content="@aaronhugginsdev" />
-        <meta name="twitter:image" content={`${origin}/static/v8clog.png`}></meta>
-        <meta property="og:url" content={origin} />
-        <meta property="og:title" content={`${name} - ${site}`} />
-        <meta property="og:description" content={name} />
-        <meta property="og:image" content={`${origin}/static/v8clog.png`} />
-      </Helmet>
+      <Meta origin={origin} name={name} path="/about" />
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <h3 class="uk-light">{name}</h3>
         <p class="uk-text-meta uk-margin-remove-top">Author: <a href="https://github.com/aaronhuggins">Aaron Huggins</a></p>
