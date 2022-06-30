@@ -20,7 +20,7 @@ export function Clog ({ origin }: { origin: string }) {
   const site = "V8 Clog"
   return (
     <div class="uk-container">
-      <Meta origin={origin} name={name} site={site} path="/clog" />
+      <Meta origin={origin} name={name} path="/clog" />
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <h3>{name}</h3>
         <ol reversed>

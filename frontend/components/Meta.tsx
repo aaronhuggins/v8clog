@@ -6,7 +6,8 @@
 
 import { h, Helmet } from "../jsx.ts"
 
-export function Meta ({ name, site, origin, path }: MetaInput) {
+export function Meta ({ name, origin, path }: MetaInput) {
+  const site = "V8 Clog"
   return (
     <Helmet>
       <title>{name} - {site}</title>
@@ -25,7 +26,6 @@ export function Meta ({ name, site, origin, path }: MetaInput) {
 
 interface MetaInput {
   name: string
-  site: string
   origin: string
   path: string
 }
