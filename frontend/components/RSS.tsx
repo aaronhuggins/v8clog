@@ -55,7 +55,7 @@ function RSSItem ({ detail, data }: MilestoneInput) {
       <guid>https://v8clog.deno.dev/clog/${detail.mstone}</guid>
       <pubDate>${getPubDate(new Date(detail.stable_date))}</pubDate>
       ${
-        data.tags.length > 0
+        data.hasFeatures
           ? data.tags.map(tag => `<category>${tag}</category>`)
           : "<category>No New Features</category>"
       }

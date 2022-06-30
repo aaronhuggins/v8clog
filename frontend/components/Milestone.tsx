@@ -19,7 +19,7 @@ export function Milestone ({ detail, data, style = true, sep = true }: Milestone
             Stable date: <time datetime={detail.stable_date}>{ new Date(detail.stable_date).toDateString() }</time>
           </p>
           {
-            data.tags.length > 0
+            data.hasFeatures
               ? (
                 <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>Tags:
                   {
