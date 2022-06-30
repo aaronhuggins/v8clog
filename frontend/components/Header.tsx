@@ -5,8 +5,9 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts"
+import type { ActiveNav } from "./App.tsx";
 
-export function Header ({ active }: { active: 'home' | 'clog' | 'none' }) {
+export function Header ({ active }: { active: ActiveNav }) {
   return (
     <header id="header" class="uk-background-primary" uk-navbar>
       <nav class="uk-navbar-center">

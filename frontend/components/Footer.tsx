@@ -5,8 +5,9 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts"
+import type { ActiveNav } from "./App.tsx";
 
-export function Footer ({ active }: { active: 'home' | 'clog' | 'none' }) {
+export function Footer ({ active }: { active: ActiveNav }) {
   return (
     <footer id="footer" class="uk-background-secondary" uk-navbar>
       <nav class="uk-navbar-center">
@@ -16,6 +17,9 @@ export function Footer ({ active }: { active: 'home' | 'clog' | 'none' }) {
           </li>
           <li class={active === 'clog' ? "uk-active" : ""}>
             <a href="/clog">Clog Post Archive</a>
+          </li>
+          <li class={active === 'about' ? "uk-active" : ""}>
+            <a href="/about">About the Clog</a>
           </li>
           <li>
             <a href="https://v8.dev/">The Official v8.dev</a>

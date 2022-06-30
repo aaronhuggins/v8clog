@@ -13,13 +13,15 @@ import { Clog } from "./components/Clog.tsx";
 import { V8Metadata } from "../backend/V8Metadata.ts";
 import { ClogEntry } from "./components/ClogEntry.tsx";
 import { StaticFile } from "../backend/StaticFile.ts";
+import { About } from "./components/About.tsx";
 
 export class Router {
   routes = new Map<RouteName, URLPattern | boolean>([
     ['/', true],
     ['/clog', new URLPattern({ pathname: "/clog/:version" })],
     ['/rss.xml', true],
-    ['/static', true]
+    ['/static', true],
+    ["/about", true]
   ])
 
   #isRouteName (name: any): name is RouteName {
@@ -54,6 +56,9 @@ export class Router {
       switch (route.name) {
         case "/": {
           return this.#renderHTML(<App active="home"><Home /></App>)
+        }
+        case "/about": {
+          return this.#renderHTML(<App active="about"><About /></App>)
         }
         case "/clog": {
           if (route.params.version) {
@@ -126,7 +131,7 @@ export class Router {
   }
 }
 
-type RouteName = "/" | "/clog" | "/static" | "/rss.xml"
+type RouteName = "/" | "/clog" | "/static" | "/rss.xml" | "/about"
 
 interface Route<T extends Record<string, any> = Record<string, any>> {
   name: RouteName | null

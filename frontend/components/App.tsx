@@ -9,7 +9,7 @@ import { h, Helmet } from "../jsx.ts"
 import { Footer } from "./Footer.tsx";
 import { Header } from "./Header.tsx";
 
-export function App ({ active, children }: { active: 'home' | 'clog' | 'none'; children?: any }) {
+export function App ({ active, children }: { active: ActiveNav; children?: any }) {
   return (
     <div>
       <Helmet>
@@ -37,3 +37,5 @@ export function App ({ active, children }: { active: 'home' | 'clog' | 'none'; c
     </div>
   )
 }
+
+export type ActiveNav = 'home' | 'about' | 'clog' | 'none'
