@@ -11,6 +11,15 @@ body {
   width: 100%;
 }
 
+.uk-light .uk-label {
+  color: white;
+  background: #1e87f0;
+}
+
+.uk-light .uk-label.uk-label-danger {
+  background: #f0506e;
+}
+
 .uk-card-default {
   box-shadow: 0 5px 15px white;
   border-radius: 1em;
