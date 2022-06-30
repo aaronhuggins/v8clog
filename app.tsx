@@ -6,14 +6,14 @@
 /// <reference lib="deno.ns" />
 
 import { serve } from "https://deno.land/std@0.140.0/http/server.ts";
-import { h, renderSSR, Helmet } from "./app/jsx.ts"
-import { Home } from "./app/components/Home.tsx"
-import { RSS } from "./app/components/RSS.tsx"
-import { StaticFile } from "./app/StaticFile.ts"
-import { V8Metadata } from "./lib/V8Metadata.ts";
-import { App } from "./app/components/App.tsx";
-import { ClogEntry } from "./app/components/ClogEntry.tsx";
-import { Clog } from "./app/components/Clog.tsx";
+import { h, renderSSR, Helmet } from "./frontend/jsx.ts"
+import { Home } from "./frontend/components/Home.tsx"
+import { RSS } from "./frontend/components/RSS.tsx"
+import { StaticFile } from "./backend/StaticFile.ts"
+import { V8Metadata } from "./backend/V8Metadata.ts";
+import { App } from "./frontend/components/App.tsx";
+import { ClogEntry } from "./frontend/components/ClogEntry.tsx";
+import { Clog } from "./frontend/components/Clog.tsx";
 
 const pattern = new URLPattern({ pathname: "/clog/:version" })
 
