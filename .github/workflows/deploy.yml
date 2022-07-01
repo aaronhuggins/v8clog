@@ -15,9 +15,9 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      - name: Seed database
+      - name: Build database
         run: |
-          deno run -A ./script/seed.ts
+          deno task seed
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
