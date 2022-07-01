@@ -24,8 +24,14 @@ export function App ({ active, children }: { active: ActiveNav; children?: any }
         <link rel="stylesheet" href="/static/extensions.css" />
         <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"></script>
-        <script src="/static/highlight.min.js"></script>
-        <script footer>hljs.highlightAll();</script>
+        <script defer src="/static/highlight.min.js"></script>
+        <script>
+          {`document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((el) => {
+              hljs.highlightElement(el);
+            });
+          });`}
+        </script>
       </Helmet>
 
       <Header active={active} />
