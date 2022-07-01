@@ -6,7 +6,7 @@
 /// <reference lib="deno.ns" />
 
 import { RSS } from "../frontend/components/RSS.tsx";
-import { h, Helmet, renderSSR } from "../frontend/jsx.ts";
+import { createXMLRenderer, h, Helmet, renderSSR } from "../frontend/jsx.ts";
 import { App } from "../frontend/components/App.tsx"
 import { Home } from "../frontend/components/Home.tsx";
 import { Clog } from "./components/Clog.tsx";
@@ -14,6 +14,8 @@ import { V8Metadata } from "../backend/V8Metadata.ts";
 import { ClogEntry } from "./components/ClogEntry.tsx";
 import { StaticFile } from "../backend/StaticFile.ts";
 import { About } from "./components/About.tsx";
+
+const renderXML = createXMLRenderer(renderSSR)
 
 export class Router {
   routes = new Map<RouteName, URLPattern | boolean>([
@@ -83,7 +85,7 @@ export class Router {
           })
         }
         case "/rss.xml": {
-          return this.#renderRSS(route.url.origin)
+          return this.#renderRSS(<RSS origin={route.url.origin} />)
         }
         case "/static": {
           const file = new StaticFile(route.url)
@@ -119,8 +121,9 @@ export class Router {
     })
   }
 
-  #renderRSS (origin: string) {
-    const rss = RSS({ origin })
+  #renderRSS (input: any) {
+    const xmlDirective = '<?xml version="1.0" encoding="utf-8"?>'
+    const rss = xmlDirective + renderXML(input)
     return new Response(rss, {
       headers: {
         "Content-Type": "application/rss+xml",
