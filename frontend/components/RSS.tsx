@@ -49,13 +49,13 @@ export const RSS = xml(function RSS ({ origin }: { origin: string }) {
 function RSSItem ({ detail, data, origin }: MilestoneInput & { origin: string }) {
   return (
     <item>
-      <title>V8 release v${ detail.mstone }</title>
+      <title>V8 release v{ detail.mstone }</title>
       <link>{origin}/clog/{detail.mstone}</link>
       <guid>{origin}/clog/{detail.mstone}</guid>
       <pubDate>{getPubDate(new Date(detail.stable_date))}</pubDate>
       {
         data.hasFeatures
-          ? data.tags.map(tag => (<category>${tag}</category>))
+          ? data.tags.map(tag => (<category>{tag}</category>))
           : <category>No New Features</category>
       }
       <description><MilestoneBody data={data} style={false} /></description>
