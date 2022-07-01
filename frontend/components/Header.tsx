@@ -29,7 +29,7 @@ export function Header ({ active }: { active: ActiveNav }) {
               <a href="https://v8.dev/">v8.dev</a>
             </li>
             <li>
-              <a href="/rss.xml"><span id="rss" class="uk-margin-remove-right uk-icon" uk-icon="rss"></span></a>
+              <a id="rss" href="/rss.xml"><span class="uk-margin-remove-right uk-icon" uk-icon="rss"></span><span>RSS</span></a>
             </li>
           </ul>
         </div>
