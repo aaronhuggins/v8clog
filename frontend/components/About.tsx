@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { h, Helmet } from "../jsx.ts"
+import { h } from "../jsx.ts"
 import { Meta } from "./Meta.tsx";
 
 export function About ({ origin }: { origin: string }) {
