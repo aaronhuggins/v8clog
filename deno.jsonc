@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "clean": "rm -rf ./data",
+    "seed": "deno run -A ./script/seed.ts",
+    "rebuild": "deno task clean && deno task seed",
+    "dev": "deno run -A --watch ./app.ts",
+    "prod": "deno run -A ./app.ts"
+  }
+}
