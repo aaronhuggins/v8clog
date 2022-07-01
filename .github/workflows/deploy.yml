@@ -1,5 +1,9 @@
 name: Deploy
-on: [workflow_dispatch]
+on: 
+  - workflow_dispatch
+  - schedule:
+    - cron: "0 8 * * *"
+
 
 jobs:
   deploy:
