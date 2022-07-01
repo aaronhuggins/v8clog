@@ -91,6 +91,10 @@ pre > code {
   width: 100%;
 }
 
+#rss:after {
+  content: ' RSS';
+}
+
 .lead {
   margin-top: -2em;
 }
@@ -98,5 +102,11 @@ pre > code {
 @media only screen and (max-width: 960px) {
   .lead {
     margin-top: -1.5em;
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  #rss:after {
+    content: '';
   }
 }
