@@ -5,5 +5,15 @@
     "rebuild": "deno task clean && deno task seed",
     "dev": "deno run -A --watch ./app.ts",
     "prod": "deno run -A ./app.ts"
+  },
+  "fmt": {
+    "files": {
+      "exclude": ["static/"]
+    }
+  },
+  "lint": {
+    "files": {
+      "exclude": ["static/"]
+    }
   }
 }
