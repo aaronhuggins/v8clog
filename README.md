@@ -10,10 +10,6 @@ changelogs aren't great reading for humans.
 - Release posts (ClogEntry)
 - RSS feed (RSS)
 
-## To-do
-
-- Automate the release deployment on a regular interval via Github actions
-
 ## Roadmap
 
 - Next 4 weeks
@@ -32,6 +28,6 @@ changelogs aren't great reading for humans.
 
 ## Deployment Strategy
 
-- Build V8 database once every 8 hours (this should catch things like bugfixes, emrgency releases, etc.)
+- Build V8 database once every 24 hours
 - Deploy all assets statically to Deno Deploy
 - Serve assets via application on demand
