@@ -1,7 +1,8 @@
 # V8 Clog
 
-A [webapp front-end](https://v8clog.deno.dev) for the V8 Changelog. Because the blog release posts are discontinued and
-changelogs aren't great reading for humans.
+A [webapp front-end](https://v8clog.deno.dev) for the V8 Changelog. Because the
+blog release posts are discontinued and changelogs aren't great reading for
+humans.
 
 ## Features
 
@@ -24,7 +25,6 @@ changelogs aren't great reading for humans.
   - Linkbacks to the V8.dev blog and Chrome Status from Clog posts
   - Consumer for performance improvement blog posts
   - Renderer for performance blog post linkbacks
-
 
 ## Deployment Strategy
 

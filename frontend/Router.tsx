@@ -7,7 +7,7 @@
 
 import { RSS } from "../frontend/components/RSS.tsx";
 import { createXMLRenderer, h, Helmet, renderSSR } from "../frontend/jsx.ts";
-import { App } from "../frontend/components/App.tsx"
+import { App } from "../frontend/components/App.tsx";
 import { Home } from "../frontend/components/Home.tsx";
 import { Clog } from "./components/Clog.tsx";
 import { V8Metadata } from "../backend/V8Metadata.ts";
@@ -15,128 +15,156 @@ import { ClogEntry } from "./components/ClogEntry.tsx";
 import { StaticFile } from "../backend/StaticFile.ts";
 import { About } from "./components/About.tsx";
 
-const renderXML = createXMLRenderer(renderSSR)
+const renderXML = createXMLRenderer(renderSSR);
 
 export class Router {
   routes = new Map<RouteName, URLPattern | boolean>([
-    ['/', true],
-    ['/clog', new URLPattern({ pathname: "/clog/:version" })],
-    ['/rss.xml', true],
-    ['/static', true],
+    ["/", true],
+    ["/clog", new URLPattern({ pathname: "/clog/:version" })],
+    ["/rss.xml", true],
+    ["/static", true],
     ["/about", true],
-    ["/robots.txt", true]
-  ])
+    ["/robots.txt", true],
+  ]);
 
-  #isRouteName (name: any): name is RouteName {
-    return Array.from(this.routes.keys()).includes(name)
+  #isRouteName(name: any): name is RouteName {
+    return Array.from(this.routes.keys()).includes(name);
   }
 
-  #getRoute (urlString: string) {
-    const url = new URL(urlString)
-    const [_, second] = url.pathname.split("/")
-    const name = '/' + second
-    const isRoute = this.#isRouteName(name)
-    const result = isRoute ? this.routes.get(name) : undefined
+  #getRoute(urlString: string) {
+    const url = new URL(urlString);
+    const [_, second] = url.pathname.split("/");
+    const name = "/" + second;
+    const isRoute = this.#isRouteName(name);
+    const result = isRoute ? this.routes.get(name) : undefined;
     const route: Route = {
       name: isRoute ? name : null,
       url,
-      params: {}
-    }
+      params: {},
+    };
 
     if (result && result !== true) {
-      const match = result.exec(url)
+      const match = result.exec(url);
 
-      if (match) route.params = match.pathname.groups
+      if (match) route.params = match.pathname.groups;
     }
 
-    return route
+    return route;
   }
 
-  respond () {
+  respond() {
     return async (request: Request) => {
-      const route = this.#getRoute(request.url)
+      const route = this.#getRoute(request.url);
 
       switch (route.name) {
         case "/": {
-          return this.#renderHTML(<App active="home"><Home origin={route.url.origin} /></App>)
+          return this.#renderHTML(
+            <App active="home">
+              <Home origin={route.url.origin} />
+            </App>,
+          );
         }
         case "/about": {
-          return this.#renderHTML(<App active="about"><About origin={route.url.origin} /></App>)
+          return this.#renderHTML(
+            <App active="about">
+              <About origin={route.url.origin} />
+            </App>,
+          );
         }
         case "/clog": {
           if (route.params.version) {
             try {
-              const metadata = new V8Metadata()
-              const detail = await metadata.milestone(route.params.version)
-              const features = await metadata.features(route.params.version)
-  
-              return this.#renderHTML(<App active="none"><ClogEntry detail={detail} features={features} origin={route.url.origin} /></App>)
-            } catch (_error) { /* Missing or broken entries should rediect home. */ }
+              const metadata = new V8Metadata();
+              const detail = await metadata.milestone(route.params.version);
+              const features = await metadata.features(route.params.version);
+
+              return this.#renderHTML(
+                <App active="none">
+                  <ClogEntry
+                    detail={detail}
+                    features={features}
+                    origin={route.url.origin}
+                  />
+                </App>,
+              );
+            } catch (_error) {
+              /* Missing or broken entries should rediect home. */
+            }
           } else {
-            return this.#renderHTML(<App active="clog"><Clog origin={route.url.origin} /></App>)
+            return this.#renderHTML(
+              <App active="clog">
+                <Clog origin={route.url.origin} />
+              </App>,
+            );
           }
-          break
+          break;
         }
         case "/robots.txt": {
-          return new Response('', {
+          return new Response("", {
             headers: {
-              "Content-Type": "text/plain"
-            }
-          })
+              "Content-Type": "text/plain",
+            },
+          });
         }
         case "/rss.xml": {
-          return this.#renderRSS(<RSS origin={route.url.origin} />)
+          return this.#renderRSS(<RSS origin={route.url.origin} />);
         }
         case "/static": {
-          const file = new StaticFile(route.url)
-          if (file.isStatic) return file.response()
-          break
+          const file = new StaticFile(route.url);
+          if (file.isStatic) return file.response();
+          break;
         }
       }
-  
-      return Response.redirect(route.url.origin, 307)
-    }
+
+      return Response.redirect(route.url.origin, 307);
+    };
   }
 
-  #renderHTML (input: any) {
-    const app = renderSSR(input)
-    const { body, head, footer, attributes } = Helmet.SSR(app)
-  
+  #renderHTML(input: any) {
+    const app = renderSSR(input);
+    const { body, head, footer, attributes } = Helmet.SSR(app);
+
     const html = `
     <!DOCTYPE html>
     <html ${attributes.html.toString()}>
       <head>
-        ${head.join('\n')}
+        ${head.join("\n")}
       </head>
       <body ${attributes.body.toString()}>
         ${body}
-        ${footer.join('\n')}
+        ${footer.join("\n")}
       </body>
-    </html>`
-  
+    </html>`;
+
     return new Response(html, {
       headers: {
-        "Content-Type": "text/html"
-      }
-    })
+        "Content-Type": "text/html",
+      },
+    });
   }
 
-  #renderRSS (input: any) {
-    const xmlDirective = '<?xml version="1.0" encoding="utf-8"?>'
-    const rss = xmlDirective + renderXML(input)
+  #renderRSS(input: any) {
+    const xmlDirective = '<?xml version="1.0" encoding="utf-8"?>';
+    const rss = xmlDirective + renderXML(input);
     return new Response(rss, {
       headers: {
         "Content-Type": "application/rss+xml",
-        "Cache-Control": "no-cache, no-store"
-      }
-    })
+        "Cache-Control": "no-cache, no-store",
+      },
+    });
   }
 }
 
-type RouteName = "/" | "/clog" | "/static" | "/rss.xml" | "/about" | "/robots.txt"
+type RouteName =
+  | "/"
+  | "/clog"
+  | "/static"
+  | "/rss.xml"
+  | "/about"
+  | "/robots.txt";
 
 interface Route<T extends Record<string, any> = Record<string, any>> {
-  name: RouteName | null
-  url: URL
-  params: T
+  name: RouteName | null;
+  url: URL;
+  params: T;
 }

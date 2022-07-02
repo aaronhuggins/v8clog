@@ -5,11 +5,13 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { h, Helmet } from "../jsx.ts"
+import { h, Helmet } from "../jsx.ts";
 import { Footer } from "./Footer.tsx";
 import { Header } from "./Header.tsx";
 
-export function App ({ active, children }: { active: ActiveNav; children?: any }) {
+export function App(
+  { active, children }: { active: ActiveNav; children?: any },
+) {
   return (
     <div>
       <Helmet>
@@ -22,8 +24,16 @@ export function App ({ active, children }: { active: ActiveNav; children?: any }
         <link rel="stylesheet" href="/static/uikit.min.css" />
         <link rel="stylesheet" href="/static/a11y-dark.min.css" />
         <link rel="stylesheet" href="/static/extensions.css" />
-        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"></script>
+        <script
+          defer
+          src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"
+        >
+        </script>
+        <script
+          defer
+          src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"
+        >
+        </script>
         <script defer src="/static/highlight.min.js"></script>
         <script>
           {`document.addEventListener('DOMContentLoaded', (event) => {
@@ -36,11 +46,11 @@ export function App ({ active, children }: { active: ActiveNav; children?: any }
 
       <Header active={active} />
       <div class="uk-section uk-background-secondary">
-        { children }
+        {children}
       </div>
       <Footer active={active} />
     </div>
-  )
+  );
 }
 
-export type ActiveNav = 'home' | 'about' | 'clog' | 'none'
+export type ActiveNav = "home" | "about" | "clog" | "none";

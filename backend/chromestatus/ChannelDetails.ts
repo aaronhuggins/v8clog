@@ -1,8 +1,8 @@
-export type Channel = "canary_asan" | "canary" | "dev" | "beta" | "stable"
+export type Channel = "canary_asan" | "canary" | "dev" | "beta" | "stable";
 
-export type ChannelDetails = Record<Channel, MilestoneDetail>
+export type ChannelDetails = Record<Channel, MilestoneDetail>;
 
-export type MilestoneDetails = Record<number, MilestoneDetail>
+export type MilestoneDetails = Record<number, MilestoneDetail>;
 
 export interface MilestoneDetail {
   branch_point: string;
@@ -20,8 +20,8 @@ export interface MilestoneDetail {
   version?: number;
 }
 
-export type V8ChannelDetails = Record<Channel, V8MilestoneDetail>
+export type V8ChannelDetails = Record<Channel, V8MilestoneDetail>;
 
 export interface V8MilestoneDetail extends Omit<MilestoneDetail, "mstone"> {
-  mstone: string
+  mstone: string;
 }

@@ -4,10 +4,10 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { h, Helmet } from "../jsx.ts"
+import { h, Helmet } from "../jsx.ts";
 
-export function Meta ({ name, origin, path }: MetaInput) {
-  const site = "V8 Clog"
+export function Meta({ name, origin, path }: MetaInput) {
+  const site = "V8 Clog";
   return (
     <Helmet>
       <title>{name} - {site}</title>
@@ -21,11 +21,11 @@ export function Meta ({ name, origin, path }: MetaInput) {
       <meta property="og:description" content={name} />
       <meta property="og:image" content={`${origin}/static/v8clog.png`} />
     </Helmet>
-  )
+  );
 }
 
 interface MetaInput {
-  name: string
-  origin: string
-  path: string
+  name: string;
+  origin: string;
+  path: string;
 }
