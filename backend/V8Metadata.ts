@@ -292,7 +292,6 @@ export class V8Metadata {
       });
 
     for (const [milestone, detail] of entries) {
-      if (!detail.stable_date) continue;
       const version = this.toV8Version(milestone);
       const feature = await api.features({ milestone });
       const v8detail = this.toV8Milestone(detail);
