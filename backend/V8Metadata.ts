@@ -109,10 +109,10 @@ export class V8Metadata {
     return detail;
   }
 
-  async allMilestonePairs(): Promise<MilestonePair[]> {
+  async allMilestoneEntries(): Promise<MilestoneEntry[]> {
     const channels = database.get<V8MilestoneDetail>("channels");
     const features = database.get<FeatureDetails>("features");
-    const pairs: MilestonePair[] = [];
+    const pairs: MilestoneEntry[] = [];
 
     for await (const detail of channels.getAll()) {
       if (detail._id === "latest") continue;
@@ -193,10 +193,10 @@ export class V8Metadata {
     }).map((val) => new FeatureData(val));
   }
 
-  async allDetailsInRange(range: MilestoneRange): Promise<MilestonePair[]> {
+  async allDetailsInRange(range: MilestoneRange): Promise<MilestoneEntry[]> {
     const details = await this.milestonesInRange(range);
     const features = await this.featuresInRange(range);
-    const result: MilestonePair[] = [];
+    const result: MilestoneEntry[] = [];
 
     for (const [index, detail] of details.entries()) {
       result.push({
@@ -304,7 +304,7 @@ export interface MilestoneRange {
   end: string;
 }
 
-export interface MilestonePair {
+export interface MilestoneEntry {
   detail: V8MilestoneDetail;
   features: FeatureData;
 }

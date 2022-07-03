@@ -11,7 +11,7 @@ import { Meta } from "./Meta.tsx";
 const getData = async () => {
   const metadata = new V8Metadata();
 
-  return await metadata.allMilestonePairs();
+  return await metadata.allMilestoneEntries();
 };
 const data = await getData();
 

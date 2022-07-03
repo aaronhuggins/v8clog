@@ -6,7 +6,7 @@
 
 import type { FeatureDetail } from "../../backend/chromestatus/FeatureDetails.ts";
 import type { FeatureData } from "../../backend/FeatureData.ts";
-import type { MilestonePair } from "../../backend/V8Metadata.ts";
+import type { MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { h } from "../jsx.ts";
 
 export function Milestone(
@@ -138,7 +138,7 @@ function MilestoneCategory(
 }
 
 export interface MilestoneInput {
-  detail: MilestonePair["detail"];
+  detail: MilestoneEntry["detail"];
   data: FeatureData;
   style?: boolean;
   sep?: boolean;

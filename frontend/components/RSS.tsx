@@ -11,7 +11,7 @@ import { MilestoneBody, MilestoneInput } from "./Milestone.tsx";
 const x = createXMLHandler(h);
 const getData = async () => {
   const metadata = new V8Metadata();
-  return await metadata.allMilestonePairs();
+  return await metadata.allMilestoneEntries();
 };
 const data = await getData();
 const getPubDate = (date: Date) => {

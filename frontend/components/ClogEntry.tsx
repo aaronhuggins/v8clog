@@ -5,12 +5,12 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts";
-import type { MilestonePair } from "../../backend/V8Metadata.ts";
+import type { MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { Milestone } from "./Milestone.tsx";
 import { Meta } from "./Meta.tsx";
 
 export function ClogEntry(
-  { detail, features, origin }: MilestonePair & { origin: string },
+  { detail, features, origin }: MilestoneEntry & { origin: string },
 ) {
   return (
     <div class="uk-container">
