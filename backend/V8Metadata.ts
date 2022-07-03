@@ -118,7 +118,7 @@ export class V8Metadata {
     for await (const detail of channels.getAll()) {
       if (detail._id === "latest") continue;
       const data = new FeatureData(await features.get(detail._id));
-      const apiChanges = await api_changes.getSafely(detail._id)
+      const apiChanges = await api_changes.getSafely(detail._id);
 
       pairs.push({ detail, features: data, apiChanges });
     }
@@ -210,7 +210,7 @@ export class V8Metadata {
       if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1;
       if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1;
       return 0;
-    })
+    });
   }
 
   async allDetailsInRange(range: MilestoneRange): Promise<MilestoneEntry[]> {
@@ -223,7 +223,7 @@ export class V8Metadata {
       result.push({
         detail,
         features: features[index],
-        apiChanges: api_changes[index]
+        apiChanges: api_changes[index],
       });
     }
 
@@ -321,7 +321,7 @@ export class V8Metadata {
 }
 
 export interface APIChanges {
-  commits: Commit[]
+  commits: Commit[];
 }
 
 export interface MilestoneRange {
@@ -332,5 +332,5 @@ export interface MilestoneRange {
 export interface MilestoneEntry {
   detail: V8MilestoneDetail;
   features: FeatureData;
-  apiChanges?: APIChanges
+  apiChanges?: APIChanges;
 }
