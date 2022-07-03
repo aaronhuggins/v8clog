@@ -29,7 +29,10 @@ export function Clog({ origin }: { origin: string }) {
               <a href={`/clog/${val.detail.mstone}`}>
                 V8 release v{val.detail.mstone}
               </a>
-              <time class="uk-margin-small-left" datetime={val.detail.stable_date}>
+              <time
+                class="uk-margin-small-left"
+                datetime={val.detail.stable_date}
+              >
                 {new Date(val.detail.stable_date).toDateString()}
               </time>
               {val.features.hasFeatures
