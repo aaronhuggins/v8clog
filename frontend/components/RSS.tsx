@@ -45,7 +45,7 @@ export const RSS = xml(function RSS({ origin }: { origin: string }) {
           type="application/rss+xml"
         />
         {data.map((val) => (
-          <RSSItem detail={val.detail} data={val.features} origin={origin} />
+          <RSSItem detail={val.detail} data={val.features} apiChanges={val.apiChanges} origin={origin} />
         ))}
       </channel>
     </rss>
@@ -53,7 +53,7 @@ export const RSS = xml(function RSS({ origin }: { origin: string }) {
 }, { atomLink: "atom:link" });
 
 function RSSItem(
-  { detail, data, origin }: MilestoneInput & { origin: string },
+  { detail, data, apiChanges, origin }: MilestoneInput & { origin: string },
 ) {
   if (detail.stable_date === null) return null;
   return (
@@ -66,7 +66,7 @@ function RSSItem(
         ? data.tags.map((tag) => <category>{tag}</category>)
         : <category>No New Features</category>}
       <description>
-        <MilestoneBody data={data} style={false} />
+        <MilestoneBody data={data} apiChanges={apiChanges} style={false} />
       </description>
     </item>
   );
