@@ -12,6 +12,7 @@ import {
   FeatureDetails,
 } from "./chromestatus/FeatureDetails.ts";
 import { FeatureData } from "./FeatureData.ts";
+import { Commit, GitLog } from "./GitLog.ts";
 
 export class V8Metadata {
   #categories = [
@@ -207,11 +208,54 @@ export class V8Metadata {
     return result;
   }
 
-  async seed(historical = 70) {
-    const api = new ChromstatusAPI();
+  async seedGitLog(start: number, end: number) {
+    const gitlog = new GitLog("https://chromium.googlesource.com/v8/v8.git");
+    const api_changes = database.get("api_changes");
+
+    await gitlog.clone([[
+      "remote.origin.fetch",
+      "+refs/branch-heads/*:refs/remotes/branch-heads/*",
+    ]]);
+
+    const author = "^((?!(V8 Autoroll|v8-ci-autoroll-builder)).*)$";
+    const files = ["include/v8*.h"];
+    const revSpec = (startVer: string, endVer: string) =>
+      `branch-heads/${startVer}..branch-heads/${endVer}`;
+    const commits = async (
+      startVer: string,
+      endVer: string,
+    ): Promise<[string, Commit[]]> => [
+      endVer,
+      await gitlog.commits({
+        author,
+        revision: revSpec(startVer, endVer),
+        files,
+      }),
+    ];
+    const promises = [];
+
+    for (let i = start - 1; i < end; i++) {
+      const startVer = this.toV8Version(i);
+      const endVer = this.toV8Version(i + 1);
+      promises.push(
+        commits(startVer, endVer).then(async ([key, commits]) => {
+          await api_changes.put(api_changes.document(key, { commits }));
+        }),
+      );
+    }
+
+    await Promise.all(promises);
+
+    await gitlog.destroy();
+  }
+
+  async seedChromestatus(
+    api: ChromstatusAPI,
+    releases: ChannelDetails,
+    historical = 70,
+  ) {
     const channels = database.get("channels");
     const features = database.get("features");
-    const releases = await api.channels();
     const { mstone: stable } = releases.stable;
     const upcoming = stable + 4;
     const milestones = await api.channels({ start: historical, end: upcoming });
@@ -240,6 +284,17 @@ export class V8Metadata {
     await channels.put(
       channels.document("latest", this.toV8ChannelDetails(releases)),
     );
+  }
+
+  async seed(historical = 70) {
+    const api = new ChromstatusAPI();
+    const releases = await api.channels();
+
+    await Promise.all([
+      (() => this.seedChromestatus(api, releases, historical))(),
+      (() => this.seedGitLog(historical, releases.stable.mstone))(),
+    ]);
+
     await database.commit();
   }
 }
