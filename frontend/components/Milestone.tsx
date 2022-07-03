@@ -10,7 +10,7 @@ import type { APIChanges, MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { h } from "../jsx.ts";
 
 export function Milestone(
-  { detail, apiChanges, data, showAPIChanges = true, style = true, sep = true }: MilestoneInput,
+  { detail, apiChanges, data, style = true, sep = true }: MilestoneInput,
 ) {
   return (
     <div>
@@ -40,7 +40,7 @@ export function Milestone(
             )
             : null}
         </div>
-        <MilestoneBody data={data} apiChanges={apiChanges} showAPIChanges={showAPIChanges} style={style} />
+        <MilestoneBody data={data} apiChanges={apiChanges} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
           <p>
             <a href={`/clog/${detail.mstone}`}>Permalink</a>
@@ -53,7 +53,7 @@ export function Milestone(
 }
 
 export function MilestoneBody(
-  { data, apiChanges, style = true, showAPIChanges = false }: Omit<MilestoneInput, "detail">,
+  { data, apiChanges, style = true }: Omit<MilestoneInput, "detail">,
 ) {
   return (
     <div>
@@ -92,7 +92,7 @@ export function MilestoneBody(
         featureDetails={data.developerTrial}
         style={style}
       />
-      {showAPIChanges ? (<MilestoneAPIChanges apiChanges={apiChanges} style={style} />) : null}
+      <MilestoneAPIChanges apiChanges={apiChanges} style={style} />
     </div>
   );
 }
@@ -173,7 +173,6 @@ export interface MilestoneInput {
   detail: MilestoneEntry["detail"];
   data: FeatureData;
   apiChanges?: APIChanges;
-  showAPIChanges?: boolean;
   style?: boolean;
   sep?: boolean;
 }
