@@ -55,6 +55,7 @@ export const RSS = xml(function RSS({ origin }: { origin: string }) {
 function RSSItem(
   { detail, data, origin }: MilestoneInput & { origin: string },
 ) {
+  if (detail.stable_date === null) return null;
   return (
     <item>
       <title>V8 release v{detail.mstone}</title>

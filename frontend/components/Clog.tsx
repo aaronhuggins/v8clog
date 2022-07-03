@@ -24,28 +24,31 @@ export function Clog({ origin }: { origin: string }) {
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <h3>{name}</h3>
         <ol reversed>
-          {data.map((val) => (
-            <li class="uk-padding-small uk-padding-remove-top v8-clogroll">
-              <a href={`/clog/${val.detail.mstone}`}>
-                V8 release v{val.detail.mstone}
-              </a>
-              <time
-                class="uk-margin-small-left"
-                datetime={val.detail.stable_date}
-              >
-                {new Date(val.detail.stable_date).toDateString()}
-              </time>
-              {val.features.hasFeatures
-                ? val.features.tags.map((tag) => (
-                  <span class="uk-label uk-margin-small-left">{tag}</span>
-                ))
-                : (
-                  <span class="uk-label uk-label-danger uk-margin-small-left">
-                    No New Features
-                  </span>
-                )}
-            </li>
-          ))}
+          {data.map((val) => {
+            if (val.detail.stable_date === null) return null;
+            return (
+              <li class="uk-padding-small uk-padding-remove-top v8-clogroll">
+                <a href={`/clog/${val.detail.mstone}`}>
+                  V8 release v{val.detail.mstone}
+                </a>
+                <time
+                  class="uk-margin-small-left"
+                  datetime={val.detail.stable_date}
+                >
+                  {new Date(val.detail.stable_date).toDateString()}
+                </time>
+                {val.features.hasFeatures
+                  ? val.features.tags.map((tag) => (
+                    <span class="uk-label uk-margin-small-left">{tag}</span>
+                  ))
+                  : (
+                    <span class="uk-label uk-label-danger uk-margin-small-left">
+                      No New Features
+                    </span>
+                  )}
+              </li>
+            );
+          })}
         </ol>
       </div>
     </div>
