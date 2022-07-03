@@ -10,16 +10,13 @@ humans.
 - Release archive (Clog)
 - Release posts (ClogEntry)
 - RSS feed (RSS)
+- API Changes (Clog entries and RSS feed)
 
 ## Roadmap
 
-- Next 4 weeks
+- Next 6 weeks
   - `/tags/:tagname` route for filtering clog posts
   - `/tags/:tagname/rss.xml` route for filtered rss feeds
-- Next 8 weeks
-  - Consumer for API changes from the official V8 git log
-  - Renderer for API changes
-  - API changes to RSS feeds
   - Tag for API changes
 - Next 12 weeks
   - Linkbacks to the V8.dev blog and Chrome Status from Clog posts
