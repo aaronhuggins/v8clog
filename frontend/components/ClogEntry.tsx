@@ -10,7 +10,7 @@ import { Milestone } from "./Milestone.tsx";
 import { Meta } from "./Meta.tsx";
 
 export function ClogEntry(
-  { detail, features, origin }: MilestoneEntry & { origin: string },
+  { detail, features, origin, apiChanges }: MilestoneEntry & { origin: string },
 ) {
   return (
     <div class="uk-container">
@@ -19,7 +19,7 @@ export function ClogEntry(
         name={`V8 release v${detail.mstone}`}
         path={`/clog/${detail.mstone}`}
       />
-      <Milestone detail={detail} data={features} sep={false} />
+      <Milestone detail={detail} apiChanges={apiChanges} data={features} sep={false} />
     </div>
   );
 }

@@ -6,11 +6,11 @@
 
 import type { FeatureDetail } from "../../backend/chromestatus/FeatureDetails.ts";
 import type { FeatureData } from "../../backend/FeatureData.ts";
-import type { MilestoneEntry } from "../../backend/V8Metadata.ts";
+import type { APIChanges, MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { h } from "../jsx.ts";
 
 export function Milestone(
-  { detail, data, style = true, sep = true }: MilestoneInput,
+  { detail, apiChanges, data, showAPIChanges = true, style = true, sep = true }: MilestoneInput,
 ) {
   return (
     <div>
@@ -40,7 +40,7 @@ export function Milestone(
             )
             : null}
         </div>
-        <MilestoneBody data={data} style={style} />
+        <MilestoneBody data={data} apiChanges={apiChanges} showAPIChanges={showAPIChanges} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
           <p>
             <a href={`/clog/${detail.mstone}`}>Permalink</a>
@@ -53,7 +53,7 @@ export function Milestone(
 }
 
 export function MilestoneBody(
-  { data, style = true }: Omit<MilestoneInput, "detail">,
+  { data, apiChanges, style = true, showAPIChanges = false }: Omit<MilestoneInput, "detail">,
 ) {
   return (
     <div>
@@ -92,6 +92,7 @@ export function MilestoneBody(
         featureDetails={data.developerTrial}
         style={style}
       />
+      {showAPIChanges ? (<MilestoneAPIChanges apiChanges={apiChanges} style={style} />) : null}
     </div>
   );
 }
@@ -137,9 +138,42 @@ function MilestoneCategory(
   );
 }
 
+function MilestoneAPIChanges ({ apiChanges, style = true }: { apiChanges?: APIChanges; style?: boolean; }) {
+  if (!apiChanges) return null
+
+  return (
+    <div class={style ? "uk-card-body uk-background-secondary uk-light" : ""}>
+      <h4>
+        {`API Changes (${apiChanges.commits.length})`}
+      </h4>
+      <ul>
+        {
+          apiChanges.commits.map(val => {
+            return (
+              <li>{val.subject}</li>
+            )
+          })
+        }
+      </ul>
+      {style
+        ? (
+          <details>
+            <summary>JSON data</summary>
+            <pre>
+              <code class="json">{JSON.stringify(apiChanges.commits, null, 2)}</code>
+            </pre>
+          </details>
+        )
+        : null}
+    </div>
+  )
+}
+
 export interface MilestoneInput {
   detail: MilestoneEntry["detail"];
   data: FeatureData;
+  apiChanges?: APIChanges;
+  showAPIChanges?: boolean;
   style?: boolean;
   sep?: boolean;
 }

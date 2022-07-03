@@ -77,12 +77,14 @@ export class Router {
               const metadata = new V8Metadata();
               const detail = await metadata.milestone(route.params.version);
               const features = await metadata.features(route.params.version);
+              const apiChanges = await metadata.apiChanges(route.params.version)
 
               return this.#renderHTML(
                 <App active="none">
                   <ClogEntry
                     detail={detail}
                     features={features}
+                    apiChanges={apiChanges}
                     origin={route.url.origin}
                   />
                 </App>,
