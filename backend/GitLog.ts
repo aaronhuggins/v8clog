@@ -1,7 +1,7 @@
 import { parse } from "https://deno.land/std@0.146.0/encoding/yaml.ts"
 
 export class GitLog {
-  #format = '- author: %n    name: "%aN"%n    email: "%aE"%n    date: "%aI"%n  commiter:%n    name: "%cN"%n    email: "%cE"%n    date: "%cI"%n  subject: |-%n%w(0,4,4)%s%w(0,0,0)%n  sanitized_subject_line: %f%n  body: |-%n%w(0,4,4)%b%n'
+  #format = '- author:%n    name: "%aN"%n    email: "%aE"%n    date: "%aI"%n  commiter:%n    name: "%cN"%n    email: "%cE"%n    date: "%cI"%n  subject: |-%n%w(0,4,4)%s%w(0,0,0)%n  sanitized_subject_line: %f%n  body: |%n%w(0,4,4)>%b%n'
   #repo: string
   #dir: string
 
@@ -12,7 +12,7 @@ export class GitLog {
   }
 
   /** Perform a bare clone filtering out blobs. */
-  async clone (config: [key: string, value: string][] = []) {
+  async clone (config: [key: string, value: string][] = []): Promise<string> {
     const decoder = new TextDecoder()
     const configs: string[] = []
 
@@ -31,15 +31,13 @@ export class GitLog {
 
     cmd.close()
 
-    return {
-      success: status.code === 0,
-      output: decoder.decode(stdout),
-      errors: decoder.decode(stderr)
-    }
+    if (status.code > 0) throw decoder.decode(stderr)
+
+    return stdout.byteLength === 0 ? decoder.decode(stderr) : decoder.decode(stdout)
   }
 
   /** Get the log according to the revision spec */
-  async log ({ author, revision, files = [] }: LogOptions = {}) {
+  async commits ({ author, revision, files = [] }: LogOptions = {}): Promise<Commit[]> {
     const decoder = new TextDecoder()
     const cmd = Deno.run({
       cmd: [
@@ -68,7 +66,11 @@ export class GitLog {
 
     if (status.code > 0) throw decoder.decode(stderr)
 
-    return (parse(decoder.decode(yaml)) ?? []) as Commit[]
+    return ((parse(decoder.decode(yaml)) ?? []) as Commit[])
+      .map(commit => ({
+        ...commit,
+        body: commit.body.substring(1)
+      }))
   }
 
   async destroy() {
