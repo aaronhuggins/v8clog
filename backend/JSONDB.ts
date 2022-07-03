@@ -54,7 +54,7 @@ export class JSONCollection<D extends {}> {
     delete result.data;
   }
 
-  async #get(id: string): Promise<Document<D> | undefined> {
+  async getSafely(id: string): Promise<Document<D> | undefined> {
     if (!this.#opened) await this.open();
 
     const index = this.#index.get(id) ?? [];
@@ -94,7 +94,7 @@ export class JSONCollection<D extends {}> {
 
   /** Get a document. */
   async get(id: string) {
-    const document = await this.#get(id);
+    const document = await this.getSafely(id);
 
     if (document) return document;
 
@@ -134,7 +134,7 @@ export class JSONCollection<D extends {}> {
       doc: Document<D> | undefined,
     ) => Document<D> | Promise<Document<D>>,
   ) {
-    const oldDoc = await this.#get(id);
+    const oldDoc = await this.getSafely(id);
     const newDoc = await handler(oldDoc);
     await this.put(newDoc);
   }
