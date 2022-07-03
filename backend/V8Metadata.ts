@@ -112,13 +112,15 @@ export class V8Metadata {
   async allMilestoneEntries(): Promise<MilestoneEntry[]> {
     const channels = database.get<V8MilestoneDetail>("channels");
     const features = database.get<FeatureDetails>("features");
+    const api_changes = database.get<APIChanges>("api_changes");
     const pairs: MilestoneEntry[] = [];
 
     for await (const detail of channels.getAll()) {
       if (detail._id === "latest") continue;
       const data = new FeatureData(await features.get(detail._id));
+      const apiChanges = await api_changes.getSafely(detail._id)
 
-      pairs.push({ detail, features: data });
+      pairs.push({ detail, features: data, apiChanges });
     }
 
     // deno-lint-ignore no-explicit-any
@@ -193,15 +195,35 @@ export class V8Metadata {
     }).map((val) => new FeatureData(val));
   }
 
+  async apiChangesInRange(range: MilestoneRange): Promise<APIChanges[]> {
+    const api_changes = database.get<APIChanges>("api_changes");
+    const details = await api_changes.query((doc) => {
+      if (
+        Number.parseFloat(doc._id) >= Number.parseFloat(range.start) &&
+        Number.parseFloat(doc._id) <= Number.parseFloat(range.end)
+      ) {
+        return doc;
+      }
+    });
+
+    return details.sort((a, b) => {
+      if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1;
+      if (Number.parseFloat(a._id) < Number.parseFloat(b._id)) return 1;
+      return 0;
+    })
+  }
+
   async allDetailsInRange(range: MilestoneRange): Promise<MilestoneEntry[]> {
     const details = await this.milestonesInRange(range);
     const features = await this.featuresInRange(range);
+    const api_changes = await this.apiChangesInRange(range);
     const result: MilestoneEntry[] = [];
 
     for (const [index, detail] of details.entries()) {
       result.push({
         detail,
         features: features[index],
+        apiChanges: api_changes[index]
       });
     }
 
@@ -299,6 +321,10 @@ export class V8Metadata {
   }
 }
 
+export interface APIChanges {
+  commits: Commit[]
+}
+
 export interface MilestoneRange {
   start: string;
   end: string;
@@ -307,4 +333,5 @@ export interface MilestoneRange {
 export interface MilestoneEntry {
   detail: V8MilestoneDetail;
   features: FeatureData;
+  apiChanges?: APIChanges
 }
