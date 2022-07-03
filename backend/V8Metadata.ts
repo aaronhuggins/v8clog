@@ -195,6 +195,12 @@ export class V8Metadata {
     }).map((val) => new FeatureData(val));
   }
 
+  async apiChanges (version: string): Promise<APIChanges | undefined> {
+    const api_changes = database.get<APIChanges>("api_changes");
+
+    return await api_changes.getSafely(version)
+  }
+
   async apiChangesInRange(range: MilestoneRange): Promise<APIChanges[]> {
     const api_changes = database.get<APIChanges>("api_changes");
     const details = await api_changes.query((doc) => {
