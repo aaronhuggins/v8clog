@@ -20,8 +20,8 @@ export class V8Metadata {
     "WebAssembly",
   ];
 
-  static start = "7.0"
-  static end = ""
+  static start = "7.0";
+  static end = "";
 
   static toVersion(version: string): number {
     const ver = Number.parseFloat(version);
@@ -97,7 +97,7 @@ export class V8Metadata {
       }
     }
 
-    V8Metadata.end = this.toV8Version(this.toVersion(latest.stable.mstone) + 4)
+    V8Metadata.end = this.toV8Version(this.toVersion(latest.stable.mstone) + 4);
 
     return latest;
   }
