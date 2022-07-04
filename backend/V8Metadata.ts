@@ -20,19 +20,30 @@ export class V8Metadata {
     "WebAssembly",
   ];
 
-  toVersion(version: string): number {
+  static start = "7.0";
+  static end = "";
+
+  static toVersion(version: string): number {
     const ver = Number.parseFloat(version);
 
     return ver * 10;
   }
 
-  toV8Version(version: number | string): string {
+  get toVersion() {
+    return V8Metadata.toVersion;
+  }
+
+  static toV8Version(version: number | string): string {
     const strVersion = version.toString();
     if ((/\d+\.\d/).test(strVersion)) return strVersion;
 
     const ver = Number.parseFloat(strVersion);
 
     return (ver / 10).toFixed(1);
+  }
+
+  get toV8Version() {
+    return V8Metadata.toV8Version;
   }
 
   toV8Milestone(detail: MilestoneDetail): V8MilestoneDetail {
@@ -85,6 +96,8 @@ export class V8Metadata {
         latest = record;
       }
     }
+
+    V8Metadata.end = this.toV8Version(this.toVersion(latest.stable.mstone) + 4);
 
     return latest;
   }
@@ -195,10 +208,10 @@ export class V8Metadata {
     }).map((val) => new FeatureData(val));
   }
 
-  async apiChanges (version: string): Promise<APIChanges | undefined> {
+  async apiChanges(version: string): Promise<APIChanges | undefined> {
     const api_changes = database.get<APIChanges>("api_changes");
 
-    return await api_changes.getSafely(version)
+    return await api_changes.getSafely(version);
   }
 
   async apiChangesInRange(range: MilestoneRange): Promise<APIChanges[]> {

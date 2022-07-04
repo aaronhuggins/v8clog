@@ -45,7 +45,12 @@ export const RSS = xml(function RSS({ origin }: { origin: string }) {
           type="application/rss+xml"
         />
         {data.map((val) => (
-          <RSSItem detail={val.detail} data={val.features} apiChanges={val.apiChanges} origin={origin} />
+          <RSSItem
+            detail={val.detail}
+            data={val.features}
+            apiChanges={val.apiChanges}
+            origin={origin}
+          />
         ))}
       </channel>
     </rss>

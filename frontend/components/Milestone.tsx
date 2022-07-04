@@ -138,8 +138,10 @@ function MilestoneCategory(
   );
 }
 
-function MilestoneAPIChanges ({ apiChanges, style = true }: { apiChanges?: APIChanges; style?: boolean; }) {
-  if (!apiChanges) return null
+function MilestoneAPIChanges(
+  { apiChanges, style = true }: { apiChanges?: APIChanges; style?: boolean },
+) {
+  if (!apiChanges) return null;
 
   return (
     <div class={style ? "uk-card-body uk-background-secondary uk-light" : ""}>
@@ -147,26 +149,24 @@ function MilestoneAPIChanges ({ apiChanges, style = true }: { apiChanges?: APICh
         {`API Changes (${apiChanges.commits.length})`}
       </h4>
       <ul>
-        {
-          apiChanges.commits.map(val => {
-            return (
-              <li>{val.subject}</li>
-            )
-          })
-        }
+        {apiChanges.commits.map((val) => {
+          return <li>{val.subject}</li>;
+        })}
       </ul>
       {style
         ? (
           <details>
             <summary>JSON data</summary>
             <pre>
-              <code class="json">{JSON.stringify(apiChanges.commits, null, 2)}</code>
+              <code class="json">
+                {JSON.stringify(apiChanges.commits, null, 2)}
+              </code>
             </pre>
           </details>
         )
         : null}
     </div>
-  )
+  );
 }
 
 export interface MilestoneInput {

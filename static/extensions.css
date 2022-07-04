@@ -95,6 +95,10 @@ pre > code {
   margin-top: -2em;
 }
 
+.pager-span {
+  display: block;
+}
+
 @media only screen and (max-width: 960px) {
   .lead {
     margin-top: -1.5em;
