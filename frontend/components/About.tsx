@@ -53,10 +53,9 @@ export function About({ origin }: { origin: string }) {
           Naturally, there are a lot of projects which benefit from V8 and which
           don't touch Google Chrome itself; Node.js, Deno, Cloudflare, to name a
           few. When looking at runtimes on top of the engine, the biggest
-          concern I have have is "what is the latest changes to V8 that is
-          included with this version?" Knowing that prepares me, at least
-          partly, to understand the impact to my code running on top of the
-          engine.
+          concern I have is "what is the latest changes to V8 that is included
+          with this version?" Knowing that prepares me, at least partly, to
+          understand the impact to my code running on top of the engine.
         </p>
         <p class="uk-light">
           <blockquote class="twitter-tweet">
