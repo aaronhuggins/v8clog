@@ -63,8 +63,8 @@ export class V8Metadata {
     };
   }
 
-  toV8Features(features: FeatureDetails | null): FeatureDetails | null {
-    if (features === null) return null;
+  toV8Features(features: FeatureDetails | null | undefined): FeatureDetails | null {
+    if (features === null || features === undefined) return null;
 
     const mapper = (f: FeatureDetail) => this.#categories.includes(f.category);
 
@@ -174,7 +174,7 @@ export class V8Metadata {
       const ver = this.toVersion(version);
       const api = new ChromstatusAPI();
       const newDetails = this.toV8Features(
-        await api.features({ milestone: ver }),
+        (await api.features({ milestone: ver }))?.features_by_type,
       );
 
       if (newDetails) {
@@ -314,7 +314,7 @@ export class V8Metadata {
       const version = this.toV8Version(milestone);
       const feature = await api.features({ milestone });
       const v8detail = this.toV8Milestone(detail);
-      const v8feature = this.toV8Features(feature);
+      const v8feature = this.toV8Features(feature?.features_by_type);
 
       channels.put(channels.document(version, v8detail));
       features.put(features.document(version, v8feature ?? {}));

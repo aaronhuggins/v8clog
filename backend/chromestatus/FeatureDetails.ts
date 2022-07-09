@@ -1,10 +1,10 @@
-export interface FeatureDetails {
-  "Enabled by default": FeatureDetail[];
-  Deprecated: FeatureDetail[];
-  Removed: FeatureDetail[];
-  "Browser Intervention": FeatureDetail[];
-  "Origin trial": FeatureDetail[];
-  "In developer trial (Behind a flag)": FeatureDetail[];
+export type FeatureType = "Enabled by default" | "Deprecated" | "Removed" | "Browser Intervention" | "Origin trial" | "In developer trial (Behind a flag)"
+
+export type FeatureDetails = Record<FeatureType, FeatureDetail[]>
+
+export interface FeatureDetailResponse {
+  features_by_type: FeatureDetails
+  total_count: number
 }
 
 export interface FeatureDetail {
