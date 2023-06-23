@@ -69,13 +69,13 @@ export class V8Metadata {
     const mapper = (f: FeatureDetail) => this.#categories.includes(f.category);
 
     return {
-      "Browser Intervention": features["Browser Intervention"].filter(mapper),
-      Deprecated: features.Deprecated.filter(mapper),
-      "Enabled by default": features["Enabled by default"].filter(mapper),
+      "Browser Intervention": features["Browser Intervention"]?.filter(mapper),
+      Deprecated: features.Deprecated?.filter(mapper),
+      "Enabled by default": features["Enabled by default"]?.filter(mapper),
       "In developer trial (Behind a flag)":
-        features["In developer trial (Behind a flag)"].filter(mapper),
-      "Origin trial": features["Origin trial"].filter(mapper),
-      Removed: features.Removed.filter(mapper),
+        features["In developer trial (Behind a flag)"]?.filter(mapper),
+      "Origin trial": features["Origin trial"]?.filter(mapper),
+      Removed: features.Removed?.filter(mapper),
     };
   }
 
@@ -87,7 +87,7 @@ export class V8Metadata {
       const api = new ChromstatusAPI();
       const newest = this.toV8ChannelDetails(await api.channels());
 
-      if (newest && newest.stable.mstone !== latest.stable.mstone) {
+      if (newest && newest.stable?.mstone !== latest.stable?.mstone) {
         const record = channels.document("latest", newest);
 
         await channels.put(record);
@@ -97,7 +97,7 @@ export class V8Metadata {
       }
     }
 
-    V8Metadata.end = this.toV8Version(this.toVersion(latest.stable.mstone) + 4);
+    V8Metadata.end = this.toV8Version(this.toVersion(latest.stable?.mstone ?? "0") + 4);
 
     return latest;
   }

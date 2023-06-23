@@ -218,7 +218,7 @@ class JSONDB {
     this.#defaults = { ...opts };
   }
 
-  get<T = {}>(name: string, opts?: CollectionOpts): JSONCollection<T> {
+  get<T extends {} = {}>(name: string, opts?: CollectionOpts): JSONCollection<T> {
     const hasCol = this.#collections.get(name);
     if (hasCol) return hasCol as any;
 
