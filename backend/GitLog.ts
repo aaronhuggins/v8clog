@@ -3,7 +3,7 @@ import { parse } from "https://deno.land/std@0.146.0/encoding/yaml.ts";
 
 export class GitLog {
   #format =
-    '- author:%n    name: "%aN"%n    email: "%aE"%n    date: "%aI"%n  committer:%n    name: "%cN"%n    email: "%cE"%n    date: "%cI"%n  subject: |-%n%w(0,4,4)%s%w(0,0,0)%n  sanitized_subject_line: %f%n  body: |%n%w(0,4,4)>%b%n';
+    '- author:%n    name: "%aN"%n    email: "%aE"%n    date: "%aI"%n  committer:%n    name: "%cN"%n    email: "%cE"%n    date: "%cI"%n  subject: |-%n%w(0,4,4)%s%w(0,0,0)%n  body: |%n%w(0,4,4)>%b%n';
   #repo: string;
   #dir: string;
 
@@ -104,7 +104,6 @@ export interface Commit {
   author: Entity;
   committer: Entity;
   subject: string;
-  sanitized_subject_line: string;
   body: string;
 }
 
