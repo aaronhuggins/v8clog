@@ -14,6 +14,13 @@ export abstract class Collection<D extends {}> {
     return this.#name;
   }
 
+  get path(): string {
+    let path = this.#name;
+    if (this.#opts.prefix) path = this.#opts.prefix + this.#name;
+
+    return path + (this.#opts.suffix ?? ".db");
+  }
+
   get options(): Readonly<CollectionOpts> {
     return Object.freeze(this.#opts);
   }

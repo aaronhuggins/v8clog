@@ -9,13 +9,6 @@ export class JSONCollection<D extends {}> extends Collection<D> {
   #index = new Map<string, number>();
   #documents: Document<D>[] = [];
 
-  #path() {
-    let path = this.name;
-    if (this.options.prefix) path = this.options.prefix + this.name;
-
-    return path + (this.options.suffix ?? ".db");
-  }
-
   #handleReadResult(result: ReadResult) {
     result.data = JSON.parse(result.file as string);
     delete result.file;
@@ -58,10 +51,9 @@ export class JSONCollection<D extends {}> extends Collection<D> {
 
   /** Open the collection from disk; called by default when making any collection operation. */
   async open() {
-    const path = this.#path();
-    if (await exists(path)) {
+    if (await exists(this.path)) {
       this.#handleReadResult({
-        file: await Deno.readTextFile(path),
+        file: await Deno.readTextFile(this.path),
       });
     }
     this.#opened = true;
@@ -69,15 +61,14 @@ export class JSONCollection<D extends {}> extends Collection<D> {
 
   /** Commit the changes to disk. */
   async commit() {
-    const path = this.#path();
-    const parsed = parse(path);
+    const parsed = parse(this.path);
     const file = JSON.stringify(this);
 
     if (parsed.dir !== "." && parsed.dir !== "") {
       await Deno.mkdir(parsed.dir, { recursive: true });
     }
 
-    await Deno.writeTextFile(path, file);
+    await Deno.writeTextFile(this.path, file);
   }
 
   /** Get a document. */
