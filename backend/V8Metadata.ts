@@ -12,7 +12,12 @@ import {
   FeatureDetails,
 } from "./chromestatus/FeatureDetails.ts";
 import { FeatureData } from "./FeatureData.ts";
-import { Commit, GitLog } from "./GitLog.ts";
+import { Commit } from "./GitLog.ts";
+import {
+  DiffEntry,
+  Entity,
+  Gitiles,
+} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
 
 export class V8Metadata {
   #categories = [
@@ -63,19 +68,48 @@ export class V8Metadata {
     };
   }
 
-  toV8Features(features: FeatureDetails | null | undefined): FeatureDetails | null {
+  async toV8Features(
+    api: ChromstatusAPI,
+    features: FeatureDetails | null | undefined,
+  ): Promise<FeatureDetails | null> {
     if (features === null || features === undefined) return null;
 
-    const mapper = (f: FeatureDetail) => this.#categories.includes(f.category);
+    const mapper = async (details?: FeatureDetail[]) => {
+      if (!details) return [];
+      const verbose: Exclude<Awaited<ReturnType<typeof api.feature>>, null>[] =
+        [];
+      for (const partial of details) {
+        const detail = await api.feature(partial.id);
+        if (detail && this.#categories.includes(detail.category)) {
+          verbose.push(detail);
+        }
+      }
+      return verbose;
+    };
+
+    const [
+      browser,
+      deprecated,
+      enabled,
+      devTrial,
+      originTrial,
+      removed,
+    ] = await Promise.all([
+      mapper(features["Browser Intervention"]),
+      mapper(features.Deprecated),
+      mapper(features["Enabled by default"]),
+      mapper(features["In developer trial (Behind a flag)"]),
+      mapper(features["Origin trial"]),
+      mapper(features.Removed),
+    ]);
 
     return {
-      "Browser Intervention": features["Browser Intervention"]?.filter(mapper),
-      Deprecated: features.Deprecated?.filter(mapper),
-      "Enabled by default": features["Enabled by default"]?.filter(mapper),
-      "In developer trial (Behind a flag)":
-        features["In developer trial (Behind a flag)"]?.filter(mapper),
-      "Origin trial": features["Origin trial"]?.filter(mapper),
-      Removed: features.Removed?.filter(mapper),
+      "Browser Intervention": browser,
+      Deprecated: deprecated,
+      "Enabled by default": enabled,
+      "In developer trial (Behind a flag)": devTrial,
+      "Origin trial": originTrial,
+      Removed: removed,
     };
   }
 
@@ -97,7 +131,9 @@ export class V8Metadata {
       }
     }
 
-    V8Metadata.end = this.toV8Version(this.toVersion(latest.stable?.mstone ?? "0") + 4);
+    V8Metadata.end = this.toV8Version(
+      this.toVersion(latest.stable?.mstone ?? "0") + 4,
+    );
 
     return latest;
   }
@@ -173,7 +209,8 @@ export class V8Metadata {
     if (!details && !IS_DENO_DEPLOY) {
       const ver = this.toVersion(version);
       const api = new ChromstatusAPI();
-      const newDetails = this.toV8Features(
+      const newDetails = await this.toV8Features(
+        api,
         (await api.features({ milestone: ver }))?.features_by_type,
       );
 
@@ -250,29 +287,54 @@ export class V8Metadata {
   }
 
   async seedGitLog(start: number, end: number) {
-    const gitlog = new GitLog("https://chromium.googlesource.com/v8/v8.git");
+    const url = "https://chromium.googlesource.com/v8/v8.git";
+    const client = new Gitiles({ url, rate: 3 });
     const api_changes = database.get("api_changes");
-
-    await gitlog.clone([[
-      "remote.origin.fetch",
-      "+refs/branch-heads/*:refs/remotes/branch-heads/*",
-    ]]);
-
-    const author = "^((?!(V8 Autoroll|v8-ci-autoroll-builder)).*)$";
-    const files = ["include/v8*.h"];
     const revSpec = (startVer: string, endVer: string) =>
       `branch-heads/${startVer}..branch-heads/${endVer}`;
-    const commits = async (
-      startVer: string,
-      endVer: string,
-    ): Promise<[string, Commit[]]> => [
-      endVer,
-      await gitlog.commits({
-        author,
-        revision: revSpec(startVer, endVer),
-        files,
-      }),
-    ];
+    const isAuthor = (author: Entity) =>
+      !(/^(V8 Autoroll|v8-ci-autoroll-builder).*$/gui).test(author.name);
+    const isV8 = (diffs: DiffEntry[]) =>
+      diffs.some((diff) => {
+        return (/^include\/v8.*\.h$/gui).test(diff.old_path) ||
+          (/^include\/v8.*\.h$/gui).test(diff.new_path);
+      });
+    const splitAt = (str: string, char: string) => {
+      const index = str.indexOf(char);
+      return [str.slice(0, index), str.slice(index + 1)] as const;
+    };
+    const commits = async (startVer: string, endVer: string) => {
+      const ref = revSpec(startVer, endVer);
+      const commits: Commit[] = [];
+      const logs = client.getLogs(ref, {
+        limit: 200,
+        treeDiff: true,
+        noMerges: true,
+      });
+      for await (const log of logs) {
+        if (
+          isAuthor(log.author) &&
+          isV8(log.tree_diff)
+        ) {
+          const [subject, body] = splitAt(log.message, "\n");
+          commits.push({
+            author: {
+              email: log.author.email,
+              name: log.author.name,
+              date: new Date(log.author.time).toISOString(),
+            },
+            committer: {
+              email: log.committer.email,
+              name: log.committer.name,
+              date: new Date(log.committer.time).toISOString(),
+            },
+            subject,
+            body,
+          });
+        }
+      }
+      return [endVer, commits] as const;
+    };
     const promises = [];
 
     for (let i = start - 1; i < end; i++) {
@@ -286,8 +348,6 @@ export class V8Metadata {
     }
 
     await Promise.all(promises);
-
-    await gitlog.destroy();
   }
 
   async seedChromestatus(
@@ -314,7 +374,7 @@ export class V8Metadata {
       const version = this.toV8Version(milestone);
       const feature = await api.features({ milestone });
       const v8detail = this.toV8Milestone(detail);
-      const v8feature = this.toV8Features(feature?.features_by_type);
+      const v8feature = await this.toV8Features(api, feature?.features_by_type);
 
       channels.put(channels.document(version, v8detail));
       features.put(features.document(version, v8feature ?? {}));
