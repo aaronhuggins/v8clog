@@ -7,14 +7,13 @@
 import { h, Helmet } from "../jsx.ts";
 import { V8Metadata } from "../../backend/V8Metadata.ts";
 import { Milestone } from "./Milestone.tsx";
-import { FeatureData } from "../../backend/FeatureData.ts";
 
 const getData = async () => {
   const metadata = new V8Metadata();
   const latest = await metadata.channelDetails();
   return await metadata.allDetailsInRange({
-    start: latest.stable.mstone,
-    end: latest.canary.mstone,
+    start: latest.stable!.mstone,
+    end: latest.canary!.mstone,
   });
 };
 const data = await getData();

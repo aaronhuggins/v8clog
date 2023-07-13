@@ -12,7 +12,6 @@ import {
   FeatureDetails,
 } from "./chromestatus/FeatureDetails.ts";
 import { FeatureData } from "./FeatureData.ts";
-import { Commit } from "./GitLog.ts";
 import {
   DiffEntry,
   Entity,
@@ -412,4 +411,19 @@ export interface MilestoneEntry {
   detail: V8MilestoneDetail;
   features: FeatureData;
   apiChanges?: APIChanges;
+}
+
+export interface Commit {
+  author: {
+    name: string;
+    email: string;
+    date: string;
+  };
+  committer: {
+    name: string;
+    email: string;
+    date: string;
+  };
+  subject: string;
+  body: string;
 }
