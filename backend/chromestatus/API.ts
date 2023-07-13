@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import { ChannelDetails, MilestoneDetails } from "./ChannelDetails.ts";
-import { FeatureDetailResponse } from "./FeatureDetails.ts";
+import { FeatureDetail, FeatureDetailResponse } from "./FeatureDetails.ts";
 
 export class ChromstatusAPI {
   #base = "https://chromestatus.com/api";
@@ -53,8 +53,14 @@ export class ChromstatusAPI {
     return await this.#request("channels", 200, params);
   }
 
-  async features(params: FeaturesParams): Promise<FeatureDetailResponse | null> {
+  async features(
+    params: FeaturesParams,
+  ): Promise<FeatureDetailResponse | null> {
     return await this.#request("features", 200, params);
+  }
+
+  async feature(id: number): Promise<FeatureDetail | null> {
+    return await this.#request(`features/${id}`, 200);
   }
 }
 
