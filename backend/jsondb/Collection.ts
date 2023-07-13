@@ -49,6 +49,12 @@ export abstract class Collection<D extends {}> {
     docs: Iterable<Document<D>> | AsyncIterable<Document<D>>,
   ): Promise<void>;
 
+  abstract delete(id: string): Promise<void>;
+
+  abstract deleteAll(
+    ids: Iterable<string> | AsyncIterable<string>,
+  ): Promise<void>;
+
   abstract upsert(
     id: string,
     handler: (
@@ -56,29 +62,12 @@ export abstract class Collection<D extends {}> {
     ) => Document<D> | Promise<Document<D>>,
   ): Promise<void>;
 
-  abstract delete(id: string): Promise<void>;
-
-  abstract deleteAll(
-    ids: Iterable<string> | AsyncIterable<string>,
-  ): Promise<void>;
-
   abstract query(
     handler: (doc: Document<D>) => Document<D> | undefined,
   ): Promise<Document<D>[]>;
-
-  abstract toJSON(): CollectionPrimitive<D>;
 }
 
 export interface CollectionOpts {
   prefix?: string;
   suffix?: string;
-}
-
-export interface CollectionPrimitive<D extends {}> {
-  name: string;
-  options: CollectionOpts;
-  index: {
-    [k: string]: number;
-  };
-  documents: Document<D>[];
 }
