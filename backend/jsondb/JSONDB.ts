@@ -1,27 +1,36 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import type { CollectionOpts } from "./Collection.ts";
+import type { Collection, CollectionOpts } from "./Collection.ts";
 import { JSONCollection } from "./JSONCollection.ts";
 
-export class JSONDB {
-  #collections = new Map<string, JSONCollection<{}>>();
-  #defaults: CollectionOpts;
+type CollectionFactory = {
+  new (name: string, opts: CollectionOpts): Collection<{}>;
+};
 
-  constructor(opts: CollectionOpts = {}) {
+export class JSONDB {
+  #collections = new Map<string, Collection<{}>>();
+  #defaults: CollectionOpts;
+  #factory: CollectionFactory;
+
+  constructor(
+    opts: CollectionOpts = {},
+    factory: CollectionFactory = JSONCollection,
+  ) {
     this.#defaults = { ...opts };
+    this.#factory = factory ?? JSONCollection;
   }
 
   get<T extends {} = {}>(
     name: string,
     opts?: CollectionOpts,
-  ): JSONCollection<T> {
+  ): Collection<T> {
     const hasCol = this.#collections.get(name);
     if (hasCol) return hasCol as any;
 
-    const col = new JSONCollection<T>(name, opts ?? this.#defaults);
+    const col = new this.#factory(name, opts ?? this.#defaults);
 
     this.#collections.set(name, col);
 
-    return col;
+    return col as Collection<T>;
   }
 
   async commit() {
