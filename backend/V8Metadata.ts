@@ -1,5 +1,5 @@
 import { ChromstatusAPI } from "./chromestatus/API.ts";
-import { database } from "./JSONDB.ts";
+import { database } from "./jsondb/JSONDB.ts";
 import { IS_DENO_DEPLOY } from "./constants.ts";
 import type {
   ChannelDetails,

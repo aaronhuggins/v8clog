@@ -1,31 +1,19 @@
-// deno-lint-ignore-file no-explicit-any ban-types
-import { parse } from "https://deno.land/std@0.145.0/path/mod.ts";
+// deno-lint-ignore-file ban-types no-explicit-any
+import { parse } from "https://deno.land/std@0.194.0/path/mod.ts";
+import { exists } from "https://deno.land/std@0.194.0/fs/exists.ts";
+import { Collection, CollectionOpts } from "./Collection.ts";
+import type { Document } from "./types.ts";
 
-export class JSONCollection<D extends {}> {
+export class JSONCollection<D extends {}> extends Collection<D> {
   #opened = false;
   #index = new Map<string, number>();
   #documents: Document<D>[] = [];
-  #name: string;
-  #opts: CollectionOpts;
-
-  constructor(name: string, opts: CollectionOpts = {}) {
-    this.#name = name;
-    this.#opts = { ...opts };
-  }
-
-  get name(): string {
-    return this.#name;
-  }
-
-  get options(): Readonly<CollectionOpts> {
-    return Object.freeze(this.#opts);
-  }
 
   #path() {
-    let path = this.#name;
-    if (this.#opts.prefix) path = this.#opts.prefix + this.#name;
+    let path = this.name;
+    if (this.options.prefix) path = this.options.prefix + this.name;
 
-    return path + (this.#opts.suffix ?? ".db");
+    return path + (this.options.suffix ?? ".db");
   }
 
   #handleReadResult(result: ReadResult) {
@@ -34,9 +22,9 @@ export class JSONCollection<D extends {}> {
 
     if (
       typeof result.data?.name !== "string" ||
-      result.data.name !== this.#name ||
-      result.data?.options.prefix !== this.#opts.prefix ||
-      result.data?.options.suffix !== this.#opts.suffix
+      result.data.name !== this.name ||
+      result.data?.options.prefix !== this.options.prefix ||
+      result.data?.options.suffix !== this.options.suffix
     ) {
       return;
     }
@@ -175,29 +163,12 @@ export class JSONCollection<D extends {}> {
 
   toJSON() {
     return {
-      name: this.#name,
-      options: { ...this.#opts },
+      name: this.name,
+      options: { ...this.options },
       index: Object.fromEntries(this.#index.entries()),
       documents: this.#documents,
     };
   }
-}
-
-async function exists(path: string) {
-  try {
-    await Deno.stat(path);
-    return true;
-  } catch (error) {
-    if (error instanceof Deno.errors.NotFound) return false;
-    throw error;
-  }
-}
-
-export type Document<T extends {}> = { _id: string } & T;
-
-export interface CollectionOpts {
-  prefix?: string;
-  suffix?: string;
 }
 
 interface ReadResult {
@@ -209,31 +180,3 @@ interface ReadResult {
     documents: any[];
   };
 }
-
-class JSONDB {
-  #collections = new Map<string, JSONCollection<{}>>();
-  #defaults: CollectionOpts;
-
-  constructor(opts: CollectionOpts = {}) {
-    this.#defaults = { ...opts };
-  }
-
-  get<T extends {} = {}>(name: string, opts?: CollectionOpts): JSONCollection<T> {
-    const hasCol = this.#collections.get(name);
-    if (hasCol) return hasCol as any;
-
-    const col = new JSONCollection<T>(name, opts ?? this.#defaults);
-
-    this.#collections.set(name, col);
-
-    return col;
-  }
-
-  async commit() {
-    for (const collection of this.#collections.values()) {
-      await collection.commit();
-    }
-  }
-}
-
-export const database = new JSONDB({ prefix: "data/" });
