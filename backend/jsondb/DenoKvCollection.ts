@@ -10,7 +10,7 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
 
   async #handleMeta(meta?: DenoKvMeta): Promise<void> {
     this.open();
-    const key = [`${this.name}::meta`, "meta"] as const;
+    const key = [`${this.name}::_db_meta`, "meta"] as const;
     const result = await this.#kv!.get<DenoKvMeta>(key);
     if (meta) {
       await this.#kv!.set(key, {
