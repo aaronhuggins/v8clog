@@ -62,6 +62,12 @@ export class ChromstatusAPI {
   async feature(id: number): Promise<FeatureDetail | null> {
     return await this.#request(`features/${id}`, 200);
   }
+
+  async featuresByQuery(
+    query: string,
+  ): Promise<{ total_count: number; features: FeatureDetail[] }> {
+    return await this.#request("features", 200, { q: query });
+  }
 }
 
 export interface ChannelsParams {
