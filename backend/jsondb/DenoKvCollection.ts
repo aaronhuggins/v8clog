@@ -1,10 +1,11 @@
 // deno-lint-ignore-file ban-types
 /// <reference lib="deno.unstable" />
+import { parse } from "https://deno.land/std@0.194.0/path/mod.ts";
 import { Collection } from "./Collection.ts";
 import type { Document } from "./types.ts";
 
 export class DenoKvCollection<D extends {}> extends Collection<D> {
-  #opened = false;
+  #opened?: Promise<void>;
   #kv?: Deno.Kv;
   #meta: DenoKvMeta = {};
 
@@ -47,24 +48,23 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
     if (!this.#meta.hasMultipart) {
       await this.#handleMeta({ hasMultipart: true });
     }
-    const atomic = this.#kv!.atomic();
     const json = JSON.stringify(doc);
-    const size = 57344;
+    const size = 32768;
     let id = 0;
     for (let i = 0; i < json.length; i += size, id++) {
       const slice = json.slice(i, i + size);
-      atomic.set([`${this.name}::${doc._id}`, id], {
+      console.log("slice:", slice.length);
+      await this.#kv!.set([`${this.name}::${doc._id}`, id], {
         _id: id.toString(),
         _docId: doc._id,
         _content: slice,
       } as MultipartChunk);
     }
-    atomic.set([this.name, doc._id], {
+    await this.#kv!.set([this.name, doc._id], {
       _id: doc._id,
       _isMultipart: true,
       _chunks: id,
     } as MultipartDocument<D>);
-    await atomic.commit();
   }
 
   async #deleteMultipart(doc: MultipartDocument<D>) {
@@ -88,10 +88,25 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
   }
 
   async open(): Promise<void> {
-    if (!this.#opened) {
+    if (typeof this.#opened === "undefined") {
+      let opened = false;
+      this.#opened = new Promise<void>((resolve) => {
+        const id = setInterval(() => {
+          if (opened) {
+            clearInterval(id);
+            resolve();
+          }
+        }, 10);
+      });
+      const parsed = parse(this.path);
+      if (parsed.dir !== "." && parsed.dir !== "") {
+        await Deno.mkdir(parsed.dir, { recursive: true });
+      }
       this.#kv = await Deno.openKv(this.path);
-      this.#handleMeta();
+      await this.#handleMeta();
+      opened = true;
     }
+    await this.#opened;
   }
 
   async commit(): Promise<void> {
