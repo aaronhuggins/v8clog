@@ -32,6 +32,9 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
   }
 
   async #getMultipart(doc: MultipartDocument<D>): Promise<Document<D>> {
+    if (!this.#meta.hasMultipart) {
+      await this.#handleMeta({ hasMultipart: true });
+    }
     const keys = Array.from(
       { length: doc._chunks },
       (_, i) => [`${this.name}::${doc._id}`, i] as const,
@@ -41,6 +44,9 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
   }
 
   async #putMultipart(doc: Document<D>): Promise<void> {
+    if (!this.#meta.hasMultipart) {
+      await this.#handleMeta({ hasMultipart: true });
+    }
     const atomic = this.#kv!.atomic();
     const json = JSON.stringify(doc);
     const size = 57344;
@@ -95,7 +101,6 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
     await this.open();
     const { value } = await this.#kv!.get<Document<D>>([this.name, id]);
     if (this.#isMultipart(value)) {
-      await this.#handleMeta({ hasMultipart: true });
       return await this.#getMultipart(value);
     }
     return value ?? undefined;
