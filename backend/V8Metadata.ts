@@ -1,5 +1,5 @@
 import { ChromstatusAPI } from "./chromestatus/API.ts";
-import { database } from "./jsondb/JSONDB.ts";
+import { JSONDB } from "./jsondb/JSONDB.ts";
 import { IS_DENO_DEPLOY } from "./constants.ts";
 import type {
   ChannelDetails,
@@ -17,6 +17,9 @@ import {
   Entity,
   Gitiles,
 } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
+import { DenoKvCollection } from "./jsondb/DenoKvCollection.ts";
+
+const database = new JSONDB({ prefix: "data/" }, DenoKvCollection);
 
 export class V8Metadata {
   #categories = [
@@ -69,6 +72,7 @@ export class V8Metadata {
 
   async toV8Features(
     api: ChromstatusAPI,
+    milestone: number,
     features: FeatureDetails | null | undefined,
   ): Promise<FeatureDetails | null> {
     if (features === null || features === undefined) return null;
@@ -85,6 +89,33 @@ export class V8Metadata {
       }
       return verbose;
     };
+    const mapEnabled = async () => {
+      const js = await api.featuresByQuery(
+        `browsers.chrome.desktop="${milestone}" category="JavaScript"`,
+      );
+      const wasm = await api.featuresByQuery(
+        `browsers.chrome.desktop="${milestone}" category="WebAssembly"`,
+      );
+      return [...js.features, ...wasm.features];
+    };
+    const mapDevTrial = async () => {
+      const js = await api.featuresByQuery(
+        `browsers.chrome.devtrial.desktop.start="${milestone}" category="JavaScript"`,
+      );
+      const wasm = await api.featuresByQuery(
+        `browsers.chrome.devtrial.desktop.start="${milestone}" category="WebAssembly"`,
+      );
+      return [...js.features, ...wasm.features];
+    };
+    const mapOriginTrial = async () => {
+      const js = await api.featuresByQuery(
+        `browsers.chrome.ot.desktop.start="${milestone}" category="JavaScript"`,
+      );
+      const wasm = await api.featuresByQuery(
+        `browsers.chrome.ot.desktop.start="${milestone}" category="WebAssembly"`,
+      );
+      return [...js.features, ...wasm.features];
+    };
 
     const [
       browser,
@@ -96,9 +127,9 @@ export class V8Metadata {
     ] = await Promise.all([
       mapper(features["Browser Intervention"]),
       mapper(features.Deprecated),
-      mapper(features["Enabled by default"]),
-      mapper(features["In developer trial (Behind a flag)"]),
-      mapper(features["Origin trial"]),
+      mapEnabled(),
+      mapDevTrial(),
+      mapOriginTrial(),
       mapper(features.Removed),
     ]);
 
@@ -210,6 +241,7 @@ export class V8Metadata {
       const api = new ChromstatusAPI();
       const newDetails = await this.toV8Features(
         api,
+        ver,
         (await api.features({ milestone: ver }))?.features_by_type,
       );
 
@@ -373,10 +405,14 @@ export class V8Metadata {
       const version = this.toV8Version(milestone);
       const feature = await api.features({ milestone });
       const v8detail = this.toV8Milestone(detail);
-      const v8feature = await this.toV8Features(api, feature?.features_by_type);
+      const v8feature = await this.toV8Features(
+        api,
+        milestone,
+        feature?.features_by_type,
+      );
 
-      channels.put(channels.document(version, v8detail));
-      features.put(features.document(version, v8feature ?? {}));
+      await channels.put(channels.document(version, v8detail));
+      await features.put(features.document(version, v8feature ?? {}));
       await new Promise<void>((resolve) => setTimeout(() => resolve(), 300));
     }
 
