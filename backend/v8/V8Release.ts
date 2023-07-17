@@ -2,7 +2,7 @@ import type {
   DiffEntry,
   Entity,
   Gitiles,
-} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
+} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
 import type { ChromestatusAPI } from "../chromestatus/API.ts";
 import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";

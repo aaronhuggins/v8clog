@@ -1,4 +1,4 @@
-import { Gitiles } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
+import { Gitiles } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
 import { ChromestatusAPI } from "../chromestatus/API.ts";
 import { DenoKvCollection } from "../jsondb/DenoKvCollection.ts";
 import { JSONCollection } from "../jsondb/JSONCollection.ts";
