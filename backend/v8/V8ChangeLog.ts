@@ -4,6 +4,8 @@ import { DenoKvCollection } from "../jsondb/DenoKvCollection.ts";
 import { JSONCollection } from "../jsondb/JSONCollection.ts";
 import { Collection, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Release, V8ReleaseMeta } from "./V8Release.ts";
+import { V8Feature } from "./V8Feature.ts";
+import { V8Commit } from "./V8Commit.ts";
 
 const MIN_MILESTONE = 7;
 
@@ -114,3 +116,9 @@ export class V8ChangeLog {
     }));
   }
 }
+
+export type ReleaseData = {
+  release: V8Release;
+  features: V8Feature[];
+  changes: V8Commit[];
+};

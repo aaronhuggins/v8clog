@@ -4,12 +4,9 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import type { FeatureDetail } from "../../backend/chromestatus/FeatureDetails.ts";
-import type { FeatureData } from "../../backend/FeatureData.ts";
 import { V8Commit } from "../../backend/v8/V8Commit.ts";
 import { V8Feature } from "../../backend/v8/V8Feature.ts";
 import { V8Release } from "../../backend/v8/V8Release.ts";
-import type { APIChanges, MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { h } from "../jsx.ts";
 
 export function Milestone(

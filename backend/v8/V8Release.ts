@@ -62,7 +62,11 @@ export class V8Release {
 
   async features() {
     const features = await this.#features.query(this.#docQuery) ?? [];
-    if (features.length > 0) {
+    if (features.length === 1) {
+      return V8Feature.isNone(features[0])
+        ? []
+        : features.map((doc) => new V8Feature(doc));
+    } else if (features.length > 0) {
       return features.map((doc) => new V8Feature(doc));
     }
     const categories = ["JavaScript", "WebAssembly"];
@@ -71,54 +75,70 @@ export class V8Release {
         `browsers.chrome.desktop="${this.milestone}" category="${cat}"`
       ).join(" OR "),
     );
-    return await Promise.all(results.features.map(async (feature) => {
-      const v8feature = new V8Feature({
-        ...(feature as unknown as V8Feature),
-        milestone: feature.browsers.chrome.desktop,
-      });
+    const mapped = await Promise.all(
+      results?.features?.map(async (feature) => {
+        const v8feature = new V8Feature({
+          ...(feature as unknown as V8Feature),
+          milestone: feature.browsers.chrome.desktop,
+        });
+        await this.#features.put(
+          this.#features.document(`${v8feature.id}`, v8feature),
+        );
+        return v8feature;
+      }) ?? [],
+    );
+    if (mapped.length === 0) {
       await this.#features.put(
-        this.#features.document(`${v8feature.id}`, v8feature),
+        this.#features.document(
+          `${this.milestone}`,
+          V8Feature.none(this.milestone),
+        ),
       );
-      return v8feature;
-    }));
+    }
+    return mapped;
   }
 
   async changes() {
     const changes = await this.#changes.query(this.#docQuery) ?? [];
-    if (changes.length > 0) {
+    if (changes.length === 1) {
+      return V8Commit.isNone(changes[0])
+        ? []
+        : changes.map((doc) => new V8Commit(doc));
+    } else if (changes.length > 0) {
       return changes.map((doc) => new V8Commit(doc));
     }
     const prevVer = V8Release.getVersion(this.milestone - 1);
     const results = this.#gitiles.getLogs(
       `branch-heads/${prevVer}..branch-heads/${this.version}`,
       {
+        path: "include",
         noMerges: true,
         limit: 10000,
-        treeDiff: true,
       },
     );
-    const isAuthor = (author: Entity) =>
-      !(/^(V8 Autoroll|v8-ci-autoroll-builder).*$/gui).test(author.name);
-    const isV8 = (diffs: DiffEntry[]) =>
-      diffs.some((diff) => {
-        return (/^include\/v8.*\.h$/gui).test(diff.old_path) ||
-          (/^include\/v8.*\.h$/gui).test(diff.new_path);
-      });
-    const filtered: V8Commit[] = [];
-    const promises: Promise<void>[] = [];
+    const promises: Promise<V8Commit>[] = [];
     for await (const result of results) {
-      if (isAuthor(result.author) && isV8(result.tree_diff)) {
-        promises.push((async (): Promise<void> => {
+      if (isAuthor(result.author) && isRelevant(result.message)) {
+        promises.push((async (): Promise<V8Commit> => {
           const v8change = new V8Commit({
             ...result,
             milestone: this.milestone,
           });
-          filtered.push(v8change);
           await this.#changes.put(
             this.#changes.document(v8change.commit, v8change),
           );
+          return v8change;
         })());
       }
+    }
+    const filtered = await Promise.all(promises);
+    if (filtered.length === 0) {
+      await this.#changes.put(
+        this.#changes.document(
+          `${this.milestone}`,
+          V8Commit.none(this.milestone),
+        ),
+      );
     }
     return filtered;
   }
@@ -130,3 +150,36 @@ export class V8Release {
     };
   }
 }
+const messageIntents = [
+  "Update V8",
+  "Create V8",
+  "Squashed",
+  "Changed version",
+  "owners",
+  "test",
+  "branch cut",
+  "Bump",
+  "Revert",
+  "Reland",
+  "cleanup",
+  "task",
+  "build",
+  "builtins",
+  "cppgc",
+  "cpgpc",
+  "version \\d",
+];
+const messageIrrelevant = new RegExp(
+  `^(Merged: |fix\\(){0,1}\\[{0,1}(${messageIntents.join("|")})`,
+  "gui",
+);
+const isAuthor = (author: Entity) =>
+  !(/^(V8 Autoroll|v8-ci-autoroll-builder).*$/gui).test(author.name);
+const isRelevant = (message: string) => {
+  return !new RegExp(messageIrrelevant).test(message);
+};
+const _isV8 = (diffs: DiffEntry[]) =>
+  diffs.some((diff) => {
+    return (/^include\/v8.*\.h$/gui).test(diff.old_path) ||
+      (/^include\/v8.*\.h$/gui).test(diff.new_path);
+  });

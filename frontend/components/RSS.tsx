@@ -5,8 +5,8 @@
 /// <reference lib="deno.ns" />
 
 import { createXMLHandler, h, xml } from "../jsx.ts";
-import { MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { MilestoneBody, MilestoneInput } from "./Milestone.tsx";
+import { ReleaseData } from "../../backend/v8/V8ChangeLog.ts";
 
 const x = createXMLHandler(h);
 const getPubDate = (date: Date) => {
@@ -26,7 +26,7 @@ const getPubDate = (date: Date) => {
 };
 
 export const RSS = xml(
-  function RSS({ origin, data }: { origin: string; data: MilestoneEntry[] }) {
+  function RSS({ origin, data }: { origin: string; data: ReleaseData[] }) {
     return (
       <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
         <channel>
@@ -42,9 +42,9 @@ export const RSS = xml(
           />
           {data.map((val) => (
             <RSSItem
-              detail={val.detail}
-              data={val.features}
-              apiChanges={val.apiChanges}
+              release={val.release}
+              features={val.features}
+              changes={val.changes}
               origin={origin}
             />
           ))}
@@ -56,20 +56,22 @@ export const RSS = xml(
 );
 
 function RSSItem(
-  { detail, data, apiChanges, origin }: MilestoneInput & { origin: string },
+  { release, features, changes, origin }: MilestoneInput & { origin: string },
 ) {
-  if (detail.stable_date === null) return null;
   return (
     <item>
-      <title>V8 release v{detail.mstone}</title>
-      <link>{origin}/clog/{detail.mstone}</link>
-      <guid>{origin}/clog/{detail.mstone}</guid>
-      <pubDate>{getPubDate(new Date(detail.stable_date))}</pubDate>
-      {data.hasFeatures
-        ? data.tags.map((tag) => <category>{tag}</category>)
+      <title>V8 release v{release.version}</title>
+      <link>{origin}/clog/{release.version}</link>
+      <guid>{origin}/clog/{release.version}</guid>
+      <pubDate>{getPubDate(new Date(release.stable_date))}</pubDate>
+      {features.length > 0
+        ? Array.from(
+          new Set(features.map((feat) => feat.category)),
+          (tag) => <category>{tag}</category>,
+        )
         : <category>No New Features</category>}
       <description>
-        <MilestoneBody data={data} apiChanges={apiChanges} style={false} />
+        <MilestoneBody features={features} changes={changes} style={false} />
       </description>
     </item>
   );

@@ -16,7 +16,6 @@ import { createXMLRenderer, h, Helmet, renderSSR } from "../frontend/jsx.ts";
 import { App } from "../frontend/components/App.tsx";
 import { Home } from "../frontend/components/Home.tsx";
 import { Clog } from "./components/Clog.tsx";
-import { V8Metadata } from "../backend/V8Metadata.ts";
 import { ClogEntry } from "./components/ClogEntry.tsx";
 import { StaticFile } from "../backend/StaticFile.ts";
 import { About } from "./components/About.tsx";
@@ -72,7 +71,6 @@ export class Router {
   respond() {
     return async (request: Request) => {
       const route = this.#getRoute(request.url);
-      const metadata = new V8Metadata();
       const v8clog = new V8ChangeLog("deno_kv");
 
       switch (route.name) {
@@ -171,7 +169,22 @@ export class Router {
           });
         }
         case "/rss.xml": {
-          const data = await metadata.allMilestoneEntries();
+          const latest = await v8clog.getLatest();
+          const data = await Promise.all(
+            (await v8clog.getRange(v8clog.earliest, latest.milestone)).map(
+              async (release) => {
+                const [features, changes] = await Promise.all([
+                  release.features(),
+                  release.changes(),
+                ]);
+                return {
+                  release,
+                  features,
+                  changes,
+                };
+              },
+            ),
+          );
           return this.#renderRSS(<RSS origin={route.url.origin} data={data} />);
         }
         case "/static": {

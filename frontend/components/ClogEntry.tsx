@@ -5,7 +5,6 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts";
-import { MilestoneEntry, V8Metadata } from "../../backend/V8Metadata.ts";
 import { Milestone, MilestoneInput } from "./Milestone.tsx";
 import { Meta } from "./Meta.tsx";
 import { V8ChangeLog } from "../../backend/v8/V8ChangeLog.ts";

@@ -5,9 +5,6 @@
 /// <reference lib="deno.ns" />
 
 import { h, Helmet } from "../jsx.ts";
-import { MilestoneEntry } from "../../backend/V8Metadata.ts";
-import { Milestone } from "./Milestone.tsx";
-import { V8Release } from "../../backend/v8/V8Release.ts";
 
 export function Home(
   // deno-lint-ignore no-explicit-any

@@ -3,8 +3,21 @@ import {
   Entity,
 } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
 
+const NO_COMMITS = "NO_COMMITS" as const;
+
 export class V8Commit
   implements Omit<CommitDetail, "tree" | "parents" | "tree_diff"> {
+  static none(milestone: number) {
+    const commit = new V8Commit();
+    commit.milestone = milestone;
+    commit.message = NO_COMMITS;
+    return commit;
+  }
+
+  static isNone(commit: V8Commit): boolean {
+    return commit.message === NO_COMMITS;
+  }
+
   author!: Entity;
   commit!: string;
   committer!: Entity;
