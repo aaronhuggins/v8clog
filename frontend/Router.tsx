@@ -128,6 +128,7 @@ export class Router {
               /* Missing or broken entries should redirect home. */
             }
           } else {
+            const limit = +(route.params.limit ?? "20");
             let data: V8Release[] = [];
             if (route.params.start) {
               data = await v8clog.getRange(
@@ -137,7 +138,7 @@ export class Router {
             } else if (route.params.milestone) {
               const milestone = +(route.params.milestone ?? "0");
               data = await v8clog.getRange(
-                milestone - (+(route.params.limit ?? "20")),
+                milestone - limit,
                 milestone,
               );
             } else {
@@ -145,7 +146,7 @@ export class Router {
               data = [
                 latest,
                 ...(await v8clog.getRange(
-                  latest.milestone - 20,
+                  latest.milestone - limit,
                   latest.milestone - 1,
                 )),
               ];
@@ -155,7 +156,9 @@ export class Router {
                 <Clog
                   origin={route.url.origin}
                   data={data}
-                  start={data[0].milestone}
+                  milestone={data[0].milestone}
+                  limit={limit}
+                  v8clog={v8clog}
                 />
               </App>,
             );

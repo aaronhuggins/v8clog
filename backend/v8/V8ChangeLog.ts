@@ -103,7 +103,11 @@ export class V8ChangeLog {
     }
     start = Math.max(start, MIN_MILESTONE);
     end = Math.max(end, MIN_MILESTONE);
-    const length = end - start;
+    const length = end - start === 0
+      ? 1
+      : start === MIN_MILESTONE
+      ? end - start + 1
+      : end - start;
     const metas = await this.#releases.query((doc) =>
       doc.milestone >= start && doc.milestone <= end!
     );
@@ -111,7 +115,7 @@ export class V8ChangeLog {
       return metas.map((doc) => this.#metaRelease(doc));
     }
     const result = await this.#chromestatus.channels({ start, end });
-    return await Promise.all(Array.from({ length: end - start }, () => {
+    return await Promise.all(Array.from({ length }, () => {
       const milestone = end!--;
       return this.getRelease(milestone, result[milestone].stable_date);
     }));
