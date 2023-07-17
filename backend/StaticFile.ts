@@ -1,8 +1,14 @@
 import { lookup } from "https://deno.land/x/media_types@v3.0.3/mod.ts";
 
+const encoder = new TextEncoder();
+const errorText = encoder.encode("404: File not found.");
+
 export class StaticFile {
   isStatic: boolean;
   path: string;
+  status?: number;
+  content?: Uint8Array;
+  contentType?: string;
 
   constructor(url: string | URL) {
     const { pathname } = typeof url === "string" ? new URL(url) : url;
@@ -10,24 +16,22 @@ export class StaticFile {
     this.path = "." + pathname;
   }
 
-  response(): Promise<Response> {
-    return Deno.readFile(this.path)
-      .then(
-        (result) => {
-          return new Response(result, {
-            headers: {
-              "Content-Type": lookup(this.path) ?? "text/plain",
-            },
-          });
-        },
-        () => {
-          return new Response("404: File not found.", {
-            status: 404,
-            headers: {
-              "Content-Type": "text/html",
-            },
-          });
-        },
-      );
+  async response(): Promise<Response> {
+    try {
+      this.content = this.content ?? await Deno.readFile(this.path);
+      this.contentType = this.contentType ?? lookup(this.path) ?? "text/plain";
+      this.status = this.status ?? 200;
+    } catch (_err) {
+      this.content = errorText;
+      this.contentType = "text/html";
+      this.status = 404;
+    }
+
+    return new Response(this.content, {
+      status: 200,
+      headers: {
+        "Content-Type": this.contentType,
+      },
+    });
   }
 }

@@ -5,17 +5,12 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts";
-import { V8Metadata } from "../../backend/V8Metadata.ts";
 import { Meta } from "./Meta.tsx";
+import { V8Release } from "../../backend/v8/V8Release.ts";
 
-const getData = async () => {
-  const metadata = new V8Metadata();
-
-  return await metadata.allMilestoneEntries();
-};
-const data = await getData();
-
-export function Clog({ origin }: { origin: string }) {
+export function Clog(
+  { origin, data, start }: { origin: string; data: V8Release[]; start: number },
+) {
   const name = "Clog post archive";
 
   return (
@@ -23,29 +18,19 @@ export function Clog({ origin }: { origin: string }) {
       <Meta origin={origin} name={name} path="/clog" />
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <h3>{name}</h3>
-        <ol reversed>
+        <ol start={start} reversed>
           {data.map((val) => {
-            if (val.detail.stable_date === null) return null;
             return (
               <li class="uk-padding-small uk-padding-remove-top v8-clogroll">
-                <a href={`/clog/${val.detail.mstone}`}>
-                  V8 release v{val.detail.mstone}
+                <a href={`/clog/${val.version}`}>
+                  V8 release v{val.version}
                 </a>
                 <time
                   class="uk-margin-small-left"
-                  datetime={val.detail.stable_date}
+                  datetime={val.stable_date}
                 >
-                  {new Date(val.detail.stable_date).toDateString()}
+                  {new Date(val.stable_date).toDateString()}
                 </time>
-                {val.features.hasFeatures
-                  ? val.features.tags.map((tag) => (
-                    <span class="uk-label uk-margin-small-left">{tag}</span>
-                  ))
-                  : (
-                    <span class="uk-label uk-label-danger uk-margin-small-left">
-                      No New Features
-                    </span>
-                  )}
               </li>
             );
           })}

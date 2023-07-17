@@ -6,11 +6,14 @@
 
 import type { FeatureDetail } from "../../backend/chromestatus/FeatureDetails.ts";
 import type { FeatureData } from "../../backend/FeatureData.ts";
+import { V8Commit } from "../../backend/v8/V8Commit.ts";
+import { V8Feature } from "../../backend/v8/V8Feature.ts";
+import { V8Release } from "../../backend/v8/V8Release.ts";
 import type { APIChanges, MilestoneEntry } from "../../backend/V8Metadata.ts";
 import { h } from "../jsx.ts";
 
 export function Milestone(
-  { detail, apiChanges, data, style = true, sep = true }: MilestoneInput,
+  { release, features, changes, style = true, sep = true }: MilestoneInput,
 ) {
   return (
     <div>
@@ -21,29 +24,34 @@ export function Milestone(
       >
         <div class={style ? "uk-card-header" : ""}>
           <h3>
-            <a href={`/clog/${detail.mstone}`}>V8 release v{detail.mstone}</a>
+            <a href={`/clog/${release.version}`}>
+              V8 release v{release.version}
+            </a>
           </h3>
           <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
             Stable date:{" "}
-            <time datetime={detail.stable_date}>
-              {new Date(detail.stable_date).toDateString()}
+            <time datetime={release.stable_date}>
+              {new Date(release.stable_date).toDateString()}
             </time>
           </p>
-          {data.hasFeatures
+          {features.length > 0
             ? (
               <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
                 Tags:
-                {data.tags.map((tag) => (
-                  <span class="uk-label uk-margin-small-left">{tag}</span>
-                ))}
+                {Array.from(
+                  new Set(features.map((feat) => feat.category)),
+                  (tag) => (
+                    <span class="uk-label uk-margin-small-left">{tag}</span>
+                  ),
+                )}
               </p>
             )
             : null}
         </div>
-        <MilestoneBody data={data} apiChanges={apiChanges} style={style} />
+        <MilestoneBody features={features} changes={changes} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
           <p>
-            <a href={`/clog/${detail.mstone}`}>Permalink</a>
+            <a href={`/clog/${release.version}`}>Permalink</a>
           </p>
         </div>
       </div>
@@ -53,62 +61,35 @@ export function Milestone(
 }
 
 export function MilestoneBody(
-  { data, apiChanges, style = true }: Omit<MilestoneInput, "detail">,
+  { features, changes, style = true }: Omit<MilestoneInput, "release">,
 ) {
   return (
     <div>
-      {data.hasFeatures ? null : (
+      {features.length > 0 ? null : (
         <div class={style ? "uk-card-body" : ""}>
           <p>No new features in this version.</p>
         </div>
       )}
-      <MilestoneCategory
-        category="Enabled by default"
-        featureDetails={data.enabled}
+      <MilestoneFeatures
+        features={features}
         style={style}
       />
-      <MilestoneCategory
-        category="Deprecated"
-        featureDetails={data.deprecated}
-        style={style}
-      />
-      <MilestoneCategory
-        category="Removed"
-        featureDetails={data.removed}
-        style={style}
-      />
-      <MilestoneCategory
-        category="Browser Intervention"
-        featureDetails={data.browserIntervention}
-        style={style}
-      />
-      <MilestoneCategory
-        category="Origin trial"
-        featureDetails={data.originTrial}
-        style={style}
-      />
-      <MilestoneCategory
-        category="In developer trial behind flag"
-        featureDetails={data.developerTrial}
-        style={style}
-      />
-      <MilestoneAPIChanges apiChanges={apiChanges} style={style} />
+      <MilestoneAPIChanges changes={changes} style={style} />
     </div>
   );
 }
 
-function MilestoneCategory(
-  { category, featureDetails, style = true }: CategoryInput,
+function MilestoneFeatures(
+  { features, style = true }: CategoryInput,
 ) {
-  if (featureDetails.length === 0) return null;
+  if (features.length === 0) return null;
 
   return (
     <div class={style ? "uk-card-body uk-background-secondary uk-light" : ""}>
       <h4>
-        {category}{" "}
-        {featureDetails.length === 0 ? "(None)" : `(${featureDetails.length})`}
+        Features {features.length === 0 ? "(None)" : `(${features.length})`}
       </h4>
-      {featureDetails.map((val) => (
+      {features.map((val) => (
         <div
           class={style
             ? "uk-section uk-padding-small uk-padding-remove-top"
@@ -139,17 +120,17 @@ function MilestoneCategory(
 }
 
 function MilestoneAPIChanges(
-  { apiChanges, style = true }: { apiChanges?: APIChanges; style?: boolean },
+  { changes, style = true }: { changes?: V8Commit[]; style?: boolean },
 ) {
-  if (!apiChanges) return null;
+  if (!changes || changes.length === 0) return null;
 
   return (
     <div class={style ? "uk-card-body uk-background-secondary uk-light" : ""}>
       <h4>
-        {`API Changes (${apiChanges.commits.length})`}
+        {`API Changes (${changes.length})`}
       </h4>
       <ul>
-        {apiChanges.commits.map((val) => {
+        {changes.map((val) => {
           return <li>{val.subject}</li>;
         })}
       </ul>
@@ -159,7 +140,7 @@ function MilestoneAPIChanges(
             <summary>JSON data</summary>
             <pre>
               <code class="json">
-                {JSON.stringify(apiChanges.commits, null, 2)}
+                {JSON.stringify(changes, null, 2)}
               </code>
             </pre>
           </details>
@@ -170,15 +151,14 @@ function MilestoneAPIChanges(
 }
 
 export interface MilestoneInput {
-  detail: MilestoneEntry["detail"];
-  data: FeatureData;
-  apiChanges?: APIChanges;
+  release: V8Release;
+  features: V8Feature[];
+  changes?: V8Commit[];
   style?: boolean;
   sep?: boolean;
 }
 
 interface CategoryInput {
-  category: string;
-  featureDetails: FeatureDetail[];
+  features: V8Feature[];
   style?: boolean;
 }

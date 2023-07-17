@@ -4,19 +4,23 @@ import type {
   Gitiles,
 } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
 import type { ChromestatusAPI } from "../chromestatus/API.ts";
-import type { Document, JSONDB } from "../jsondb/JSONDB.ts";
+import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";
 import { V8Commit } from "./V8Commit.ts";
+
+export type V8ReleaseMeta = {
+  stable_date: string;
+  milestone: number;
+};
 
 export type V8ReleaseOpts =
   & {
     gitiles: Gitiles;
     chromestatus: ChromestatusAPI;
     database: JSONDB;
+    stable_date: string;
   }
-  & ({
-    milestone: number;
-  } | {
+  & (V8ReleaseMeta | {
     version: string;
   });
 
@@ -32,15 +36,21 @@ export class V8Release {
   #gitiles: Gitiles;
   #chromestatus: ChromestatusAPI;
   #database: JSONDB;
+  #features: Collection<V8Feature>;
+  #changes: Collection<V8Commit>;
   #docQuery = (doc: Document<{ milestone: number }>) =>
     doc.milestone === this.milestone;
   milestone: number;
   version: string;
+  stable_date: string;
 
   constructor(options: V8ReleaseOpts) {
     this.#chromestatus = options.chromestatus;
     this.#database = options.database;
+    this.#features = this.#database.get<V8Feature>("v8_features");
+    this.#changes = this.#database.get<V8Commit>("v8_changes");
     this.#gitiles = options.gitiles;
+    this.stable_date = options.stable_date;
     if ("milestone" in options) {
       this.milestone = options.milestone;
       this.version = V8Release.getVersion(options.milestone);
@@ -51,10 +61,8 @@ export class V8Release {
   }
 
   async features() {
-    const features =
-      await this.#database?.get<V8Feature>("features").query(this.#docQuery) ??
-        [];
-    if (features.length > 1) {
+    const features = await this.#features.query(this.#docQuery) ?? [];
+    if (features.length > 0) {
       return features.map((doc) => new V8Feature(doc));
     }
     const categories = ["JavaScript", "WebAssembly"];
@@ -68,21 +76,16 @@ export class V8Release {
         ...(feature as unknown as V8Feature),
         milestone: feature.browsers.chrome.desktop,
       });
-      await this.#database?.get<V8Feature>("features").put(
-        this.#database?.get<V8Feature>("features").document(
-          `${v8feature.id}`,
-          v8feature,
-        ),
+      await this.#features.put(
+        this.#features.document(`${v8feature.id}`, v8feature),
       );
       return v8feature;
     }));
   }
 
   async changes() {
-    const changes =
-      await this.#database?.get<V8Commit>("changes").query(this.#docQuery) ??
-        [];
-    if (changes.length > 1) {
+    const changes = await this.#changes.query(this.#docQuery) ?? [];
+    if (changes.length > 0) {
       return changes.map((doc) => new V8Commit(doc));
     }
     const prevVer = V8Release.getVersion(this.milestone - 1);
@@ -111,15 +114,19 @@ export class V8Release {
             milestone: this.milestone,
           });
           filtered.push(v8change);
-          await this.#database?.get<V8Commit>("changes").put(
-            this.#database?.get<V8Commit>("changes").document(
-              v8change.commit,
-              v8change,
-            ),
+          await this.#changes.put(
+            this.#changes.document(v8change.commit, v8change),
           );
         })());
       }
     }
     return filtered;
+  }
+
+  getMeta(): V8ReleaseMeta {
+    return {
+      milestone: this.milestone,
+      stable_date: this.stable_date,
+    };
   }
 }
