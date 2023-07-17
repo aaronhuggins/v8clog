@@ -1,7 +1,7 @@
 import {
   CommitDetail,
   Entity,
-} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.2.0/mod.ts";
+} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
 
 const NO_COMMITS = "NO_COMMITS" as const;
 
