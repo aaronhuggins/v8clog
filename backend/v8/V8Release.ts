@@ -7,6 +7,7 @@ import type { ChromestatusAPI } from "../chromestatus/API.ts";
 import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";
 import { V8Commit } from "./V8Commit.ts";
+import { V8 } from "../constants.ts";
 
 export type V8ReleaseMeta = {
   stable_date: string;
@@ -47,8 +48,8 @@ export class V8Release {
   constructor(options: V8ReleaseOpts) {
     this.#chromestatus = options.chromestatus;
     this.#database = options.database;
-    this.#features = this.#database.get<V8Feature>("v8_features");
-    this.#changes = this.#database.get<V8Commit>("v8_changes");
+    this.#features = this.#database.get<V8Feature>(V8.FEATURES);
+    this.#changes = this.#database.get<V8Commit>(V8.CHANGES);
     this.#gitiles = options.gitiles;
     this.stable_date = options.stable_date;
     if ("milestone" in options) {

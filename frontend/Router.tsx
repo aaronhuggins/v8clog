@@ -22,6 +22,7 @@ import { About } from "./components/About.tsx";
 import { V8ChangeLog } from "../backend/v8/V8ChangeLog.ts";
 import { V8Release } from "../backend/v8/V8Release.ts";
 import { Milestone } from "./components/Milestone.tsx";
+import { BACKEND_TYPE } from "../backend/constants.ts";
 
 const renderXML = createXMLRenderer(renderSSR);
 
@@ -71,7 +72,7 @@ export class Router {
   respond() {
     return async (request: Request) => {
       const route = this.#getRoute(request.url);
-      const v8clog = new V8ChangeLog("deno_kv");
+      const v8clog = new V8ChangeLog(BACKEND_TYPE);
 
       switch (route.name) {
         case "/": {

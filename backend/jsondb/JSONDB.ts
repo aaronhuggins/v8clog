@@ -44,5 +44,3 @@ export class JSONDB {
     }
   }
 }
-
-export const database = new JSONDB({ prefix: "data/" });

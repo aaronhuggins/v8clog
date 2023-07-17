@@ -6,6 +6,7 @@ import { Collection, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Release, V8ReleaseMeta } from "./V8Release.ts";
 import { V8Feature } from "./V8Feature.ts";
 import { V8Commit } from "./V8Commit.ts";
+import { V8 } from "../constants.ts";
 
 const MIN_MILESTONE = 7;
 
@@ -26,7 +27,7 @@ export class V8ChangeLog {
       url: "https://chromium.googlesource.com/v8/v8.git",
       rate: 3,
     });
-    this.#releases = this.#database.get<V8ReleaseMeta>("v8_releases");
+    this.#releases = this.#database.get<V8ReleaseMeta>(V8.RELEASES);
   }
 
   async #cacheRelease(release: V8Release) {
@@ -114,6 +115,10 @@ export class V8ChangeLog {
       const milestone = end!--;
       return this.getRelease(milestone, result[milestone].stable_date);
     }));
+  }
+
+  async commit() {
+    await this.#database.commit();
   }
 }
 
