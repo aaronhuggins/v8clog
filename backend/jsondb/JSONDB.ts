@@ -2,6 +2,11 @@
 import type { Collection, CollectionOpts } from "./Collection.ts";
 import { JSONCollection } from "./JSONCollection.ts";
 
+export * from "./Collection.ts";
+export * from "./DenoKvCollection.ts";
+export * from "./JSONCollection.ts";
+export * from "./types.ts";
+
 type CollectionFactory = {
   new (name: string, opts: CollectionOpts): Collection<{}>;
 };

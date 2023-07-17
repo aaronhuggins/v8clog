@@ -2,7 +2,7 @@
 import { parse } from "https://deno.land/std@0.194.0/path/mod.ts";
 import { exists } from "https://deno.land/std@0.194.0/fs/exists.ts";
 import { Collection, CollectionOpts } from "./Collection.ts";
-import type { Document } from "./types.ts";
+import type { Document, DocumentQuery } from "./types.ts";
 
 export class JSONCollection<D extends {}> extends Collection<D> {
   #opened = false;
@@ -132,9 +132,7 @@ export class JSONCollection<D extends {}> extends Collection<D> {
     }
   }
 
-  async query(
-    handler: (doc: Document<D>) => Document<D> | undefined,
-  ): Promise<Document<D>[]> {
+  async query(handler: DocumentQuery<D>): Promise<Document<D>[]> {
     if (!this.#opened) await this.open();
 
     return this.#documents.filter(handler);

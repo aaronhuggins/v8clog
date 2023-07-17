@@ -1,5 +1,5 @@
 // deno-lint-ignore-file ban-types
-import type { Document } from "./types.ts";
+import type { Document, DocumentQuery } from "./types.ts";
 
 export abstract class Collection<D extends {}> {
   #name: string;
@@ -62,9 +62,7 @@ export abstract class Collection<D extends {}> {
     ) => Document<D> | Promise<Document<D>>,
   ): Promise<void>;
 
-  abstract query(
-    handler: (doc: Document<D>) => Document<D> | undefined,
-  ): Promise<Document<D>[]>;
+  abstract query(handler: DocumentQuery<D>): Promise<Document<D>[]>;
 }
 
 export interface CollectionOpts {

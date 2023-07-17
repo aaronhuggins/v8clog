@@ -2,7 +2,7 @@
 /// <reference lib="deno.unstable" />
 import { parse } from "https://deno.land/std@0.194.0/path/mod.ts";
 import { Collection } from "./Collection.ts";
-import type { Document } from "./types.ts";
+import type { Document, DocumentQuery } from "./types.ts";
 
 export class DenoKvCollection<D extends {}> extends Collection<D> {
   #opened?: Promise<void>;
@@ -221,9 +221,7 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
     await this.put(newDoc);
   }
 
-  async query(
-    handler: (doc: Document<D>) => Document<D> | undefined,
-  ): Promise<Document<D>[]> {
+  async query(handler: DocumentQuery<D>): Promise<Document<D>[]> {
     const results: Document<D>[] = [];
     for await (const doc of this.getAll()) {
       if (handler(doc)) {
