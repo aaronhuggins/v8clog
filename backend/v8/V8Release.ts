@@ -152,6 +152,12 @@ export class V8Release {
   }
 }
 const messageIntents = [
+  "\\d",
+  "Merged r",
+  "Port r",
+  "Revision \\d",
+  "Push version",
+  "Merge r",
   "Update V8",
   "Create V8",
   "Squashed",
@@ -162,6 +168,8 @@ const messageIntents = [
   "Bump",
   "Revert",
   "Reland",
+  "Re-land",
+  "Rollback",
   "cleanup",
   "task",
   "build",
