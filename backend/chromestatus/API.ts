@@ -2,7 +2,7 @@
 import { ChannelDetails, MilestoneDetails } from "./ChannelDetails.ts";
 import { FeatureDetail, FeatureDetailResponse } from "./FeatureDetails.ts";
 
-export class ChromstatusAPI {
+export class ChromestatusAPI {
   #base = "https://chromestatus.com/api";
   #version = "v0";
   #XSSI_PREFIX = ")]}'\n";
@@ -65,8 +65,9 @@ export class ChromstatusAPI {
 
   async featuresByQuery(
     query: string,
+    limit = 500,
   ): Promise<{ total_count: number; features: FeatureDetail[] }> {
-    return await this.#request("features", 200, { q: query });
+    return await this.#request("features", 200, { q: query, num: limit });
   }
 }
 

@@ -1,5 +1,6 @@
-import { ChromstatusAPI } from "./chromestatus/API.ts";
+import { ChromestatusAPI } from "./chromestatus/API.ts";
 import { JSONDB } from "./jsondb/JSONDB.ts";
+import { Document } from "./jsondb/types.ts";
 import { IS_DENO_DEPLOY } from "./constants.ts";
 import type {
   ChannelDetails,
@@ -7,10 +8,7 @@ import type {
   V8ChannelDetails,
   V8MilestoneDetail,
 } from "./chromestatus/ChannelDetails.ts";
-import {
-  FeatureDetail,
-  FeatureDetails,
-} from "./chromestatus/FeatureDetails.ts";
+import { FeatureDetails } from "./chromestatus/FeatureDetails.ts";
 import { FeatureData } from "./FeatureData.ts";
 import {
   DiffEntry,
@@ -70,95 +68,85 @@ export class V8Metadata {
     };
   }
 
-  async toV8Features(
-    api: ChromstatusAPI,
+  async getV8Features(
+    api: ChromestatusAPI,
     milestone: number,
-    features: FeatureDetails | null | undefined,
   ): Promise<FeatureDetails | null> {
-    if (features === null || features === undefined) return null;
-
-    const mapper = async (details?: FeatureDetail[]) => {
-      if (!details) return [];
-      const verbose: Exclude<Awaited<ReturnType<typeof api.feature>>, null>[] =
-        [];
-      for (const partial of details) {
-        const detail = await api.feature(partial.id);
-        if (detail && this.#categories.includes(detail.category)) {
-          verbose.push(detail);
-        }
-      }
-      return verbose;
-    };
     const mapEnabled = async () => {
-      const js = await api.featuresByQuery(
-        `browsers.chrome.desktop="${milestone}" category="JavaScript"`,
-      );
-      const wasm = await api.featuresByQuery(
-        `browsers.chrome.desktop="${milestone}" category="WebAssembly"`,
-      );
+      const [js, wasm] = await Promise.all([
+        api.featuresByQuery(
+          `browsers.chrome.desktop="${milestone}" category="JavaScript"`,
+        ),
+        api.featuresByQuery(
+          `browsers.chrome.desktop="${milestone}" category="WebAssembly"`,
+        ),
+      ]);
       return [...js.features, ...wasm.features];
     };
     const mapDevTrial = async () => {
-      const js = await api.featuresByQuery(
-        `browsers.chrome.devtrial.desktop.start="${milestone}" category="JavaScript"`,
-      );
-      const wasm = await api.featuresByQuery(
-        `browsers.chrome.devtrial.desktop.start="${milestone}" category="WebAssembly"`,
-      );
+      const [js, wasm] = await Promise.all([
+        api.featuresByQuery(
+          `browsers.chrome.devtrial.desktop.start="${milestone}" category="JavaScript"`,
+        ),
+        api.featuresByQuery(
+          `browsers.chrome.devtrial.desktop.start="${milestone}" category="WebAssembly"`,
+        ),
+      ]);
       return [...js.features, ...wasm.features];
     };
     const mapOriginTrial = async () => {
-      const js = await api.featuresByQuery(
-        `browsers.chrome.ot.desktop.start="${milestone}" category="JavaScript"`,
-      );
-      const wasm = await api.featuresByQuery(
-        `browsers.chrome.ot.desktop.start="${milestone}" category="WebAssembly"`,
-      );
+      const [js, wasm] = await Promise.all([
+        api.featuresByQuery(
+          `browsers.chrome.ot.desktop.start="${milestone}" category="JavaScript"`,
+        ),
+        api.featuresByQuery(
+          `browsers.chrome.ot.desktop.start="${milestone}" category="WebAssembly"`,
+        ),
+      ]);
       return [...js.features, ...wasm.features];
     };
 
     const [
-      browser,
-      deprecated,
       enabled,
       devTrial,
       originTrial,
-      removed,
     ] = await Promise.all([
-      mapper(features["Browser Intervention"]),
-      mapper(features.Deprecated),
       mapEnabled(),
       mapDevTrial(),
       mapOriginTrial(),
-      mapper(features.Removed),
     ]);
 
     return {
-      "Browser Intervention": browser,
-      Deprecated: deprecated,
+      "Browser Intervention": [],
+      Deprecated: [],
       "Enabled by default": enabled,
       "In developer trial (Behind a flag)": devTrial,
       "Origin trial": originTrial,
-      Removed: removed,
+      Removed: [],
     };
   }
 
   async channelDetails(): Promise<V8ChannelDetails> {
     const channels = database.get<V8ChannelDetails>("channels");
-    let latest = await channels.get("latest");
+    const api = new ChromestatusAPI();
+    const newest = this.toV8ChannelDetails(await api.channels());
+    let latest = await channels.getSafely("latest");
 
-    if (!IS_DENO_DEPLOY) {
-      const api = new ChromstatusAPI();
-      const newest = this.toV8ChannelDetails(await api.channels());
-
-      if (newest && newest.stable?.mstone !== latest.stable?.mstone) {
-        const record = channels.document("latest", newest);
-
-        await channels.put(record);
+    if (!latest) {
+      latest = channels.document("latest", newest);
+      await channels.put(latest);
+      if (!IS_DENO_DEPLOY) {
         await channels.commit();
-
-        latest = record;
       }
+    } else if (newest && newest.stable?.mstone !== latest?.stable?.mstone) {
+      const record = channels.document("latest", newest);
+
+      await channels.put(record);
+      if (!IS_DENO_DEPLOY) {
+        await channels.commit();
+      }
+
+      latest = record;
     }
 
     V8Metadata.end = this.toV8Version(
@@ -174,7 +162,7 @@ export class V8Metadata {
 
     if (!detail && !IS_DENO_DEPLOY) {
       const ver = this.toVersion(version);
-      const api = new ChromstatusAPI();
+      const api = new ChromestatusAPI();
       const details = await api.channels({ start: ver - 1, end: ver });
       const newDetail = this.toV8Milestone(details[ver]);
       const record = channels.document(newDetail.mstone, newDetail);
@@ -216,14 +204,44 @@ export class V8Metadata {
 
   async milestonesInRange(range: MilestoneRange): Promise<V8MilestoneDetail[]> {
     const channels = database.get<V8MilestoneDetail>("channels");
-    const details = await channels.query((doc) => {
+    const features = database.get("features");
+    const query = (doc: Document<V8MilestoneDetail>) => {
       if (
         Number.parseFloat(doc._id) >= Number.parseFloat(range.start) &&
         Number.parseFloat(doc._id) <= Number.parseFloat(range.end)
       ) {
         return doc;
       }
-    });
+    };
+    let details = await channels.query(query);
+
+    if (details.length === 0) {
+      // Do some stuff here
+      const api = new ChromestatusAPI();
+      const milestones = await api.channels({
+        start: this.toVersion(range.start),
+        end: this.toVersion(range.end),
+      });
+      const entries = Object.entries(milestones);
+      details = [];
+      await Promise.all(entries.map(async ([mstoneStr, detail]) => {
+        const milestone = Number.parseFloat(mstoneStr);
+        const version = this.toV8Version(milestone);
+        const v8detail = this.toV8Milestone(detail);
+        const v8feature = await this.getV8Features(
+          api,
+          milestone,
+        );
+        const detailDoc = channels.document(version, v8detail);
+        details.push(detailDoc);
+        await channels.put(detailDoc);
+        await features.put(features.document(version, v8feature ?? {}));
+      }));
+      if (!IS_DENO_DEPLOY) {
+        await channels.commit();
+        await features.commit();
+      }
+    }
 
     return details.sort((a, b) => {
       if (Number.parseFloat(a._id) > Number.parseFloat(b._id)) return -1;
@@ -238,11 +256,10 @@ export class V8Metadata {
 
     if (!details && !IS_DENO_DEPLOY) {
       const ver = this.toVersion(version);
-      const api = new ChromstatusAPI();
-      const newDetails = await this.toV8Features(
+      const api = new ChromestatusAPI();
+      const newDetails = await this.getV8Features(
         api,
         ver,
-        (await api.features({ milestone: ver }))?.features_by_type,
       );
 
       if (newDetails) {
@@ -338,7 +355,7 @@ export class V8Metadata {
       const ref = revSpec(startVer, endVer);
       const commits: Commit[] = [];
       const logs = client.getLogs(ref, {
-        limit: 200,
+        limit: 10000,
         treeDiff: true,
         noMerges: true,
       });
@@ -382,7 +399,7 @@ export class V8Metadata {
   }
 
   async seedChromestatus(
-    api: ChromstatusAPI,
+    api: ChromestatusAPI,
     releases: ChannelDetails,
     historical = 70,
   ) {
@@ -403,17 +420,14 @@ export class V8Metadata {
 
     for (const [milestone, detail] of entries) {
       const version = this.toV8Version(milestone);
-      const feature = await api.features({ milestone });
       const v8detail = this.toV8Milestone(detail);
-      const v8feature = await this.toV8Features(
+      const v8feature = await this.getV8Features(
         api,
         milestone,
-        feature?.features_by_type,
       );
 
       await channels.put(channels.document(version, v8detail));
       await features.put(features.document(version, v8feature ?? {}));
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 300));
     }
 
     await channels.put(
@@ -422,7 +436,7 @@ export class V8Metadata {
   }
 
   async seed(historical = 70) {
-    const api = new ChromstatusAPI();
+    const api = new ChromestatusAPI();
     const releases = await api.channels();
 
     await Promise.all([

@@ -22,7 +22,7 @@ export class FeatureData {
     ];
 
     for (const { category } of features) {
-      tags.add(category);
+      if (category) tags.add(category);
     }
 
     return Array.from(tags).sort();
