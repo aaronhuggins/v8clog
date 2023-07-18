@@ -7,6 +7,7 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
+import { isAuthor, isRelevant } from "./filters.ts";
 
 const MIN_MILESTONE = 7;
 
@@ -119,6 +120,119 @@ export class V8ChangeLog {
       const milestone = end!--;
       return this.getRelease(milestone, result[milestone].stable_date);
     }));
+  }
+
+  async getAllData(start: number, end: number) {
+    const featuresCol = this.#database.get<V8Feature>(V8.FEATURES);
+    const changesCol = this.#database.get<V8Change>(V8.CHANGES);
+    const getAllFeatures = async () => {
+      const [js, wasm] = await Promise.all([
+        this.#chromestatus.featuresByQuery('category="JavaScript"'),
+        this.#chromestatus.featuresByQuery('category="WebAssembly"'),
+      ]);
+      const featureMap = new Map<number, V8Feature[]>();
+      const pushFeatures = (results: typeof js["features"]) => {
+        for (const feature of results) {
+          const { milestone_str } = feature.browsers.chrome.status;
+          const statusMilestone = Number.parseFloat(milestone_str ?? "NaN");
+          if (
+            feature.browsers.chrome.desktop ?? !Number.isNaN(statusMilestone)
+          ) {
+            const milestone = feature.browsers.chrome.desktop ??
+              statusMilestone;
+            const features = featureMap.get(milestone) ?? [];
+            features.push(
+              new V8Feature({
+                ...(feature as unknown as V8Feature),
+                milestone,
+              }),
+            );
+            featureMap.set(milestone, features);
+          }
+        }
+      };
+      pushFeatures(js.features);
+      pushFeatures(wasm.features);
+      return featureMap;
+    };
+    const getAllChanges = async () => {
+      const changeMap = new Map<number, V8Change[]>();
+      const promises: Promise<void>[] = [];
+      const getChanges = async (
+        previous: string,
+        version: string,
+        milestone: number,
+      ) => {
+        const changes: V8Change[] = [];
+        const results = await this.#gitiles.getLogs(
+          `branch-heads/${previous}..branch-heads/${version}`,
+          {
+            path: "include",
+            noMerges: true,
+            limit: 10000,
+          },
+        );
+        for await (const result of results) {
+          if (isAuthor(result.author) && isRelevant(result.message)) {
+            changes.push(
+              new V8Change({
+                ...result,
+                milestone,
+              }),
+            );
+          }
+        }
+        changeMap.set(milestone, changes);
+      };
+      for (let i = start; start < end; i++) {
+        const previous = V8Release.getVersion(i - 1);
+        const version = V8Release.getVersion(i);
+        promises.push(getChanges(previous, version, i));
+      }
+      await Promise.all(promises);
+      return changeMap;
+    };
+    const [releases, changes, features] = await Promise.all([
+      this.getRange(start, end),
+      getAllChanges(),
+      getAllFeatures(),
+    ]);
+    for (const release of releases) {
+      release.changes = changes.get(release.milestone);
+      release.features = features.get(release.milestone);
+      if (release.changes!.length === 0) {
+        await changesCol.put(
+          changesCol.document(
+            `${release.milestone}`,
+            V8Change.none(release.milestone),
+          ),
+        );
+      }
+      if (release.features!.length === 0) {
+        await featuresCol.put(
+          featuresCol.document(
+            `${release.milestone}`,
+            V8Feature.none(release.milestone),
+          ),
+        );
+      }
+    }
+    await changesCol.putAll(
+      Array.from(changes.values()).flat().map((change) =>
+        changesCol.document(change.commit, change)
+      ),
+    );
+    await featuresCol.putAll(
+      Array.from(features.values()).flat().map((feature) =>
+        featuresCol.document(`${feature.id}`, feature)
+      ),
+    );
+    await this.#releases.putAll(
+      releases.map((release) =>
+        this.#releases.document(`${release.milestone}`, release.getMeta())
+      ),
+    );
+    return releases;
   }
 
   async commit() {
