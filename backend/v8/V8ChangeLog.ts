@@ -125,6 +125,28 @@ export class V8ChangeLog {
   async getAllData(start: number, end: number) {
     const featuresCol = this.#database.get<V8Feature>(V8.FEATURES);
     const changesCol = this.#database.get<V8Change>(V8.CHANGES);
+    const skippable = new Map<number, V8Release>();
+    for (let i = start; !(i > end); i++) {
+      const hasRelease = await this.#releases.getSafely(`${i}`);
+      if (hasRelease) {
+        const hasFeatures = await featuresCol.query((doc) =>
+          doc.milestone === i
+        );
+        const hasChanges = await changesCol.query((doc) => doc.milestone === i);
+        if (hasFeatures.length > 0 && hasChanges.length > 0) {
+          const release = this.#metaRelease(hasRelease);
+          release.features = V8Feature.isNone(hasFeatures[0])
+            ? []
+            : hasFeatures;
+          release.changes = V8Change.isNone(hasChanges[0]) ? [] : hasChanges;
+          skippable.set(i, release);
+        }
+      }
+    }
+    console.log("isSkippable", skippable.size, end - start + 1);
+    if (skippable.size === end - start + 1) {
+      return Array.from(skippable.values());
+    }
     const getAllFeatures = async () => {
       const [js, wasm] = await Promise.all([
         this.#chromestatus.featuresByQuery('category="JavaScript"'),
@@ -186,6 +208,9 @@ export class V8ChangeLog {
       const limit = 50;
       let promises: Promise<void>[] = [];
       for (let i = start; !(i > end); i++) {
+        if (skippable.has(i)) {
+          continue;
+        }
         const previous = V8Release.getVersion(i - 1);
         const version = V8Release.getVersion(i);
         promises.push(getChanges(previous, version, i));
@@ -205,7 +230,12 @@ export class V8ChangeLog {
       getAllChanges(),
       getAllFeatures(),
     ]);
-    for (const release of releases) {
+    for (let i = 0; i < releases.length; i++) {
+      const release = releases[i];
+      if (skippable.has(release.milestone)) {
+        releases[i] = skippable.get(release.milestone)!;
+        continue;
+      }
       release.changes = changes.get(release.milestone);
       release.features = features.get(release.milestone) ?? [];
       if (release.changes!.length === 0) {
