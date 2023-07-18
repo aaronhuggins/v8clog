@@ -70,9 +70,9 @@ export class Router {
   }
 
   respond() {
+    const v8clog = new V8ChangeLog(BACKEND_TYPE);
     return async (request: Request) => {
       const route = this.#getRoute(request.url);
-      const v8clog = new V8ChangeLog(BACKEND_TYPE);
 
       switch (route.name) {
         case "/": {
