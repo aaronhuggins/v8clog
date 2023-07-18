@@ -3,7 +3,8 @@ import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";
 import { V8Commit } from "./V8Commit.ts";
 import { V8 } from "../constants.ts";
-import { DiffEntry, Entity, Gitiles } from "../deps.ts";
+import { Gitiles } from "../deps.ts";
+import { isAuthor, isRelevant } from "./filters.ts";
 
 export type V8ReleaseMeta = {
   stable_date: string;
@@ -147,44 +148,3 @@ export class V8Release {
     };
   }
 }
-const messageIntents = [
-  "\\d",
-  "Merged r",
-  "Port r",
-  "Revision \\d",
-  "Push version",
-  "Merge r",
-  "Update V8",
-  "Create V8",
-  "Squashed",
-  "Changed version",
-  "owners",
-  "test",
-  "branch cut",
-  "Bump",
-  "Revert",
-  "Reland",
-  "Re-land",
-  "Rollback",
-  "cleanup",
-  "task",
-  "build",
-  "builtins",
-  "cppgc",
-  "cpgpc",
-  "version \\d",
-];
-const messageIrrelevant = new RegExp(
-  `^(Merged: |fix\\(){0,1}\\[{0,1}(${messageIntents.join("|")})`,
-  "gui",
-);
-const isAuthor = (author: Entity) =>
-  !(/^(V8 Autoroll|v8-ci-autoroll-builder).*$/gui).test(author.name);
-const isRelevant = (message: string) => {
-  return !new RegExp(messageIrrelevant).test(message);
-};
-const _isV8 = (diffs: DiffEntry[]) =>
-  diffs.some((diff) => {
-    return (/^include\/v8.*\.h$/gui).test(diff.old_path) ||
-      (/^include\/v8.*\.h$/gui).test(diff.new_path);
-  });
