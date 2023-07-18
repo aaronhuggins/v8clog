@@ -41,6 +41,8 @@ export class V8Release {
   milestone: number;
   version: string;
   stable_date: string;
+  features?: V8Feature[];
+  changes?: V8Commit[];
 
   constructor(options: V8ReleaseOpts) {
     this.#chromestatus = options.chromestatus;
@@ -59,13 +61,16 @@ export class V8Release {
   }
 
   async getFeatures() {
+    if (this.features) {
+      return this.features;
+    }
     const features = await this.#features.query(this.#docQuery) ?? [];
     if (features.length === 1) {
       return V8Feature.isNone(features[0])
-        ? []
-        : features.map((doc) => new V8Feature(doc));
+        ? this.features = []
+        : this.features = features.map((doc) => new V8Feature(doc));
     } else if (features.length > 0) {
-      return features.map((doc) => new V8Feature(doc));
+      return this.features = features.map((doc) => new V8Feature(doc));
     }
     const categories = ["JavaScript", "WebAssembly"];
     const results = await this.#chromestatus.featuresByQuery(
@@ -93,17 +98,20 @@ export class V8Release {
         ),
       );
     }
-    return mapped;
+    return this.features = mapped;
   }
 
   async getChanges() {
+    if (this.changes) {
+      return this.changes;
+    }
     const changes = await this.#changes.query(this.#docQuery) ?? [];
     if (changes.length === 1) {
       return V8Commit.isNone(changes[0])
-        ? []
-        : changes.map((doc) => new V8Commit(doc));
+        ? this.changes = []
+        : this.changes = changes.map((doc) => new V8Commit(doc));
     } else if (changes.length > 0) {
-      return changes.map((doc) => new V8Commit(doc));
+      return this.changes = changes.map((doc) => new V8Commit(doc));
     }
     const prevVer = V8Release.getVersion(this.milestone - 1);
     const results = this.#gitiles.getLogs(
@@ -138,7 +146,7 @@ export class V8Release {
         ),
       );
     }
-    return filtered;
+    return this.changes = filtered;
   }
 
   getMeta(): V8ReleaseMeta {
