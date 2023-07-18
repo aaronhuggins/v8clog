@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { V8Commit } from "../../backend/v8/V8Commit.ts";
+import { V8Commit } from "../../backend/v8/V8Change.ts";
 import { V8Feature } from "../../backend/v8/V8Feature.ts";
 import { V8Release } from "../../backend/v8/V8Release.ts";
 import { h } from "../jsx.ts";

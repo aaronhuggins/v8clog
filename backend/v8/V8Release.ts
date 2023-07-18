@@ -1,7 +1,7 @@
 import type { ChromestatusAPI } from "../chromestatus/API.ts";
 import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";
-import { V8Commit } from "./V8Commit.ts";
+import { V8Commit } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
 import { isAuthor, isRelevant } from "./filters.ts";

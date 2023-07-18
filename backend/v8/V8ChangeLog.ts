@@ -4,7 +4,7 @@ import { JSONCollection } from "../jsondb/JSONCollection.ts";
 import { Collection, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Release, V8ReleaseMeta } from "./V8Release.ts";
 import { V8Feature } from "./V8Feature.ts";
-import { V8Commit } from "./V8Commit.ts";
+import { V8Commit } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
 
