@@ -101,7 +101,11 @@ export class JSONCollection<D extends {}> extends Collection<D> {
   }
 
   /** Create or replace one or more documents. */
-  async putAll(docs: Iterable<Document<D>> | AsyncIterable<Document<D>>) {
+  async putAll(
+    docs:
+      | Iterable<Document<D> | Promise<Document<D>>>
+      | AsyncIterable<Document<D>>,
+  ) {
     await this.#all("put", docs);
   }
 

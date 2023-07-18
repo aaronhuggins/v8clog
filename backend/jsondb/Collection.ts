@@ -46,7 +46,9 @@ export abstract class Collection<D extends {}> {
   abstract put(doc: Document<D>): Promise<void>;
 
   abstract putAll(
-    docs: Iterable<Document<D>> | AsyncIterable<Document<D>>,
+    docs:
+      | Iterable<Document<D> | Promise<Document<D>>>
+      | AsyncIterable<Document<D>>,
   ): Promise<void>;
 
   abstract delete(id: string): Promise<void>;

@@ -158,7 +158,9 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
   }
 
   async putAll(
-    docs: Iterable<Document<D>> | AsyncIterable<Document<D>>,
+    docs:
+      | Iterable<Document<D> | Promise<Document<D>>>
+      | AsyncIterable<Document<D>>,
   ): Promise<void> {
     await this.open();
     try {
