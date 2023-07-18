@@ -143,7 +143,6 @@ export class V8ChangeLog {
         }
       }
     }
-    console.log("isSkippable", skippable.size, end - start + 1);
     if (skippable.size === end - start + 1) {
       return Array.from(skippable.values());
     }
