@@ -1,6 +1,6 @@
 // deno-lint-ignore-file ban-types
 /// <reference lib="deno.unstable" />
-import { parse } from "https://deno.land/std@0.194.0/path/mod.ts";
+import { parse } from "../deps.ts";
 import { Collection } from "./Collection.ts";
 import type { Document, DocumentQuery } from "./types.ts";
 

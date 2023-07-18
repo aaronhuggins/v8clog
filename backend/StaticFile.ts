@@ -1,4 +1,4 @@
-import { lookup } from "https://deno.land/x/media_types@v3.0.3/mod.ts";
+import { lookup } from "./deps.ts";
 
 const encoder = new TextEncoder();
 const errorText = encoder.encode("404: File not found.");

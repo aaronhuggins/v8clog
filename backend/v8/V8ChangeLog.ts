@@ -1,4 +1,3 @@
-import { Gitiles } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
 import { ChromestatusAPI } from "../chromestatus/API.ts";
 import { DenoKvCollection } from "../jsondb/DenoKvCollection.ts";
 import { JSONCollection } from "../jsondb/JSONCollection.ts";
@@ -7,6 +6,7 @@ import { V8Release, V8ReleaseMeta } from "./V8Release.ts";
 import { V8Feature } from "./V8Feature.ts";
 import { V8Commit } from "./V8Commit.ts";
 import { V8 } from "../constants.ts";
+import { Gitiles } from "../deps.ts";
 
 const MIN_MILESTONE = 7;
 

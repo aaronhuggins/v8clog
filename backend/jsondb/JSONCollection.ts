@@ -1,6 +1,5 @@
 // deno-lint-ignore-file ban-types no-explicit-any
-import { parse } from "https://deno.land/std@0.194.0/path/mod.ts";
-import { exists } from "https://deno.land/std@0.194.0/fs/exists.ts";
+import { exists, parse } from "../deps.ts";
 import { Collection, CollectionOpts } from "./Collection.ts";
 import type { Document, DocumentQuery } from "./types.ts";
 

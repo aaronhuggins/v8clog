@@ -1,7 +1,4 @@
-import {
-  CommitDetail,
-  Entity,
-} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
+import { CommitDetail, Entity } from "../deps.ts";
 
 const NO_COMMITS = "NO_COMMITS" as const;
 

@@ -1,13 +1,9 @@
-import type {
-  DiffEntry,
-  Entity,
-  Gitiles,
-} from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
 import type { ChromestatusAPI } from "../chromestatus/API.ts";
 import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";
 import { V8Commit } from "./V8Commit.ts";
 import { V8 } from "../constants.ts";
+import { DiffEntry, Entity, Gitiles } from "../deps.ts";
 
 export type V8ReleaseMeta = {
   stable_date: string;
