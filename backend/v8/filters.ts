@@ -39,9 +39,15 @@ export const isRelevant = (message: string) =>
   message.match(messageIrrelevant) === null;
 export const filterTags = (subject: string): string[] => {
   const tagRe = /\[([A-Za-z0-9\+_\-]+)\]/gui;
-  return (subject.match(tagRe) ?? []).map((tag) =>
-    tag.substring(1, tag.length - 1).toLowerCase()
-  );
+  let hasWebAssembly = subject.toLowerCase().includes("webassembly");
+  const tags = (subject.match(tagRe) ?? []).map((matched) => {
+    const tag = matched.substring(1, matched.length - 1).toLowerCase();
+    if (tag.includes("wasm")) {
+      hasWebAssembly = true;
+    }
+    return tag;
+  });
+  return hasWebAssembly ? ["WebAssembly", ...tags] : tags;
 };
 const _isV8 = (diffs: DiffEntry[]) =>
   diffs.some((diff) => {
