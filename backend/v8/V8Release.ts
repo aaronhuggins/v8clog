@@ -4,11 +4,12 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
-import { isAuthor, isRelevant } from "./filters.ts";
+import { filterTags, isAuthor, isRelevant } from "./filters.ts";
 
 export type V8ReleaseMeta = {
   stable_date: string;
   milestone: number;
+  tags: string[];
 };
 
 export type V8ReleaseOpts =
@@ -41,6 +42,7 @@ export class V8Release {
   milestone: number;
   version: string;
   stable_date: string;
+  tags: string[];
   features?: V8Feature[];
   changes?: V8Change[];
 
@@ -51,6 +53,7 @@ export class V8Release {
     this.#changes = this.#database.get<V8Change>(V8.CHANGES);
     this.#gitiles = options.gitiles;
     this.stable_date = options.stable_date;
+    this.tags = [];
     if ("milestone" in options) {
       this.milestone = options.milestone;
       this.version = V8Release.getVersion(options.milestone);
@@ -58,6 +61,28 @@ export class V8Release {
       this.milestone = V8Release.getMilestone(options.version);
       this.version = options.version;
     }
+  }
+
+  async getTags() {
+    if (this.tags.length > 0) {
+      return this.tags;
+    } else {
+      if (!this.features) {
+        await this.getFeatures();
+      }
+      if (!this.changes) {
+        await this.getChanges();
+      }
+    }
+    const tags = new Set<string>(
+      this.features!.map((feature) => feature.category),
+    );
+    for (const change of this.changes ?? []) {
+      for (const tag of filterTags(change.subject)) {
+        tags.add(tag);
+      }
+    }
+    return this.tags = Array.from(tags);
   }
 
   async getFeatures() {
@@ -153,6 +178,7 @@ export class V8Release {
     return {
       milestone: this.milestone,
       stable_date: this.stable_date,
+      tags: this.tags,
     };
   }
 }

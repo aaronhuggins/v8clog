@@ -37,7 +37,12 @@ export const isAuthor = (author: Entity) =>
 
 export const isRelevant = (message: string) =>
   message.match(messageIrrelevant) === null;
-
+export const filterTags = (subject: string): string[] => {
+  const tagRe = /\[([A-Za-z0-9\+_\-]+)\]/gui;
+  return (subject.match(tagRe) ?? []).map((tag) =>
+    tag.substring(1, tag.length - 1)
+  );
+};
 const _isV8 = (diffs: DiffEntry[]) =>
   diffs.some((diff) => {
     return (/^include\/v8.*\.h$/gui).test(diff.old_path) ||
