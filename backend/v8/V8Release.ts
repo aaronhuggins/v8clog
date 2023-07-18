@@ -56,7 +56,7 @@ export class V8Release {
     this.#tags = this.#database.get<V8Tag>(V8.TAGS);
     this.#gitiles = options.gitiles;
     this.stable_date = options.stable_date;
-    this.tags = [];
+    this.tags = (options as V8ReleaseMeta).tags ?? [];
     if ("milestone" in options) {
       this.milestone = options.milestone;
       this.version = V8Release.getVersion(options.milestone);

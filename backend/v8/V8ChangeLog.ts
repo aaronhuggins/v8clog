@@ -7,7 +7,8 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
-import { isAuthor, isRelevant } from "./filters.ts";
+import { filterTags, isAuthor, isRelevant } from "./filters.ts";
+import { V8Tag } from "./V8Tag.ts";
 
 const MIN_MILESTONE = 7;
 
@@ -59,6 +60,7 @@ export class V8ChangeLog {
       gitiles: this.#gitiles,
       stable_date: stable.stable_date,
       milestone: stable.mstone,
+      tags: [],
     });
     await this.#cacheRelease(release);
     return release;
@@ -86,6 +88,7 @@ export class V8ChangeLog {
       chromestatus: this.#chromestatus,
       database: this.#database,
       gitiles: this.#gitiles,
+      tags: [],
       stable_date,
       milestone,
     });
@@ -125,6 +128,7 @@ export class V8ChangeLog {
   async getAllData(start: number, end: number) {
     const featuresCol = this.#database.get<V8Feature>(V8.FEATURES);
     const changesCol = this.#database.get<V8Change>(V8.CHANGES);
+    const tagsCol = this.#database.get<V8Tag>(V8.TAGS);
     const skippable = new Map<number, V8Release>();
     for (let i = start; !(i > end); i++) {
       const hasRelease = await this.#releases.getSafely(`${i}`);
@@ -231,6 +235,7 @@ export class V8ChangeLog {
       getAllChanges(),
       getAllFeatures(),
     ]);
+    const tagsMap = new Map<string, V8Tag>();
     for (let i = 0; i < releases.length; i++) {
       const release = releases[i];
       if (skippable.has(release.milestone)) {
@@ -239,6 +244,21 @@ export class V8ChangeLog {
       }
       release.changes = changes.get(release.milestone);
       release.features = features.get(release.milestone) ?? [];
+      const tagSet = new Set<string>(
+        release.features!.map((feature) => feature.category),
+      );
+      for (const change of release.changes ?? []) {
+        for (const tag of filterTags(change.subject)) {
+          tagSet.add(tag);
+        }
+      }
+      release.tags = Array.from(tagSet);
+      for (const name of release.tags) {
+        const tag = tagsMap.get(name);
+        const v8tag = tag ? new V8Tag(tag) : new V8Tag(name);
+        v8tag.add(release.milestone);
+        tagsMap.set(name, v8tag);
+      }
       if (release.changes!.length === 0) {
         await changesCol.put(
           changesCol.document(
@@ -256,21 +276,26 @@ export class V8ChangeLog {
         );
       }
     }
-    await changesCol.putAll(
-      Array.from(changes.values()).flat().map((change) =>
-        changesCol.document(change.commit, change)
+    await Promise.all([
+      tagsCol.putAll(
+        Array.from(tagsMap.values(), (tag) => tagsCol.document(tag.name, tag)),
       ),
-    );
-    await featuresCol.putAll(
-      Array.from(features.values()).flat().map((feature) =>
-        featuresCol.document(`${feature.id}`, feature)
+      changesCol.putAll(
+        Array.from(changes.values()).flat().map((change) =>
+          changesCol.document(change.commit, change)
+        ),
       ),
-    );
-    await this.#releases.putAll(
-      releases.map((release) =>
-        this.#releases.document(`${release.milestone}`, release.getMeta())
+      featuresCol.putAll(
+        Array.from(features.values()).flat().map((feature) =>
+          featuresCol.document(`${feature.id}`, feature)
+        ),
       ),
-    );
+      this.#releases.putAll(
+        releases.map((release) =>
+          this.#releases.document(`${release.milestone}`, release.getMeta())
+        ),
+      ),
+    ]);
     return releases;
   }
 
