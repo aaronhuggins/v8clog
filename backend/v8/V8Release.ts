@@ -66,14 +66,14 @@ export class V8Release {
     }
   }
 
-  async getTags() {
+  async getTags(noWrite?: boolean) {
     if (this.tags.length > 0) {
       return this.tags;
     } else {
-      if (!this.features) {
+      if (!this.features && !noWrite) {
         await this.getFeatures();
       }
-      if (!this.changes) {
+      if (!this.changes && !noWrite) {
         await this.getChanges();
       }
     }
@@ -86,12 +86,14 @@ export class V8Release {
       }
     }
     const tags = Array.from(tagSet);
-    await this.#tags.putAll(tags.map(async (name) => {
-      const tag = await this.#tags.getSafely(name);
-      const v8tag = tag ? new V8Tag(tag) : new V8Tag(name);
-      v8tag.add(this.milestone);
-      return this.#tags.document(name, v8tag);
-    }));
+    if (!noWrite) {
+      await this.#tags.putAll(tags.map(async (name) => {
+        const tag = await this.#tags.getSafely(name);
+        const v8tag = tag ? new V8Tag(tag) : new V8Tag(name);
+        v8tag.add(this.milestone);
+        return this.#tags.document(name, v8tag);
+      }));
+    }
     return this.tags = tags;
   }
 

@@ -87,6 +87,7 @@ export class Router {
                 {await Promise.all(
                   releases.reverse().map(async (val, index) => {
                     await val.getFeatures();
+                    await val.getTags(true);
                     return (
                       <Release
                         release={val}
@@ -112,6 +113,7 @@ export class Router {
               const release = await v8clog.getRelease(route.params.version);
               await release.getFeatures();
               await release.getChanges();
+              await release.getTags();
 
               return this.#renderHTML(
                 <App active="none">
