@@ -5,19 +5,29 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
+declare global {
+  interface URLSearchParams extends Map<string, string> {
+    size: number;
+  }
+}
+
 import { RSS } from "../frontend/components/RSS.tsx";
 import { createXMLRenderer, h, Helmet, renderSSR } from "../frontend/jsx.ts";
 import { App } from "../frontend/components/App.tsx";
 import { Home } from "../frontend/components/Home.tsx";
 import { Clog } from "./components/Clog.tsx";
-import { V8Metadata } from "../backend/V8Metadata.ts";
 import { ClogEntry } from "./components/ClogEntry.tsx";
 import { StaticFile } from "../backend/StaticFile.ts";
 import { About } from "./components/About.tsx";
+import { V8ChangeLog } from "../backend/v8/V8ChangeLog.ts";
+import { V8Release } from "../backend/v8/V8Release.ts";
+import { Release } from "./components/Release.tsx";
+import { BACKEND_TYPE } from "../backend/constants.ts";
 
 const renderXML = createXMLRenderer(renderSSR);
 
 export class Router {
+  #staticCache = new Map<string, StaticFile>();
   routes = new Map<RouteName, URLPattern | boolean>([
     ["/", true],
     ["/clog", new URLPattern({ pathname: "/clog/:version" })],
@@ -49,18 +59,43 @@ export class Router {
       if (match) route.params = match.pathname.groups;
     }
 
+    if (url.searchParams.size > 0) {
+      route.params = {
+        ...route.params,
+        ...Object.fromEntries(url.searchParams.entries()),
+      };
+    }
+
     return route;
   }
 
   respond() {
+    const v8clog = new V8ChangeLog(BACKEND_TYPE);
     return async (request: Request) => {
       const route = this.#getRoute(request.url);
 
       switch (route.name) {
         case "/": {
+          const latest = await v8clog.getLatest();
+          const releases = await v8clog.getRange(
+            latest.milestone - 1,
+            latest.milestone + 2,
+          );
           return this.#renderHTML(
             <App active="home">
-              <Home origin={route.url.origin} />
+              <Home origin={route.url.origin}>
+                {await Promise.all(
+                  releases.reverse().map(async (val, index) => {
+                    await val.getFeatures();
+                    return (
+                      <Release
+                        release={val}
+                        sep={index !== releases.length - 1}
+                      />
+                    );
+                  }),
+                )}
+              </Home>
             </App>,
           );
         }
@@ -74,30 +109,55 @@ export class Router {
         case "/clog": {
           if (route.params.version) {
             try {
-              const metadata = new V8Metadata();
-              const detail = await metadata.milestone(route.params.version);
-              const features = await metadata.features(route.params.version);
-              const apiChanges = await metadata.apiChanges(
-                route.params.version,
-              );
+              const release = await v8clog.getRelease(route.params.version);
+              await release.getFeatures();
+              await release.getChanges();
 
               return this.#renderHTML(
                 <App active="none">
                   <ClogEntry
-                    detail={detail}
-                    features={features}
-                    apiChanges={apiChanges}
+                    release={release}
                     origin={route.url.origin}
+                    v8clog={v8clog}
                   />
                 </App>,
               );
             } catch (_error) {
-              /* Missing or broken entries should rediect home. */
+              /* Missing or broken entries should redirect home. */
             }
           } else {
+            const limit = +(route.params.limit ?? "20");
+            let data: V8Release[] = [];
+            if (route.params.start) {
+              data = await v8clog.getRange(
+                +(route.params.start ?? "0"),
+                +(route.params.end ?? "0"),
+              );
+            } else if (route.params.milestone) {
+              const milestone = +(route.params.milestone ?? "0");
+              data = await v8clog.getRange(
+                milestone - limit,
+                milestone,
+              );
+            } else {
+              const latest = await v8clog.getLatest();
+              data = [
+                latest,
+                ...(await v8clog.getRange(
+                  latest.milestone - limit,
+                  latest.milestone - 1,
+                )),
+              ];
+            }
             return this.#renderHTML(
               <App active="clog">
-                <Clog origin={route.url.origin} />
+                <Clog
+                  origin={route.url.origin}
+                  data={data}
+                  milestone={data[0].milestone}
+                  limit={limit}
+                  v8clog={v8clog}
+                />
               </App>,
             );
           }
@@ -111,10 +171,19 @@ export class Router {
           });
         }
         case "/rss.xml": {
-          return this.#renderRSS(<RSS origin={route.url.origin} />);
+          await v8clog.getLatest();
+          const releases = await v8clog.getAllData(
+            v8clog.earliest,
+            v8clog.latest,
+          );
+          return this.#renderRSS(
+            <RSS origin={route.url.origin} releases={releases} />,
+          );
         }
         case "/static": {
-          const file = new StaticFile(route.url);
+          const file = this.#staticCache.get(route.url.href) ??
+            new StaticFile(route.url);
+          this.#staticCache.set(route.url.href, file);
           if (file.isStatic) return file.response();
           break;
         }

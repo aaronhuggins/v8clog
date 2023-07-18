@@ -14,17 +14,17 @@ humans.
 
 ## Roadmap
 
-- Next 6 weeks
+- Next 12 months
   - `/tags/:tagname` route for filtering clog posts
   - `/tags/:tagname/rss.xml` route for filtered rss feeds
   - Tag for API changes
-- Next 12 weeks
+- Next 18 months
   - Linkbacks to the V8.dev blog and Chrome Status from Clog posts
   - Consumer for performance improvement blog posts
   - Renderer for performance blog post linkbacks
 
 ## Deployment Strategy
 
-- Build V8 database once every 24 hours
-- Deploy all assets statically to Deno Deploy
+- Build V8 database periodically
+- Push to Github repository and land in Deno Deploy
 - Serve assets via application on demand

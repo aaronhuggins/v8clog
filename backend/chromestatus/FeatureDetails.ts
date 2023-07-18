@@ -1,107 +1,117 @@
-export type FeatureType = "Enabled by default" | "Deprecated" | "Removed" | "Browser Intervention" | "Origin trial" | "In developer trial (Behind a flag)"
+import { z } from "https://deno.land/x/zod@v3.21.4/mod.ts";
 
-export type FeatureDetails = Record<FeatureType, FeatureDetail[]>
+export type FeatureType = z.infer<typeof FeatureType>;
+export const FeatureType = z.union([z.literal("Enabled by default"), z.literal("Deprecated"), z.literal("Removed"), z.literal("Browser Intervention"), z.literal("Origin trial"), z.literal("In developer trial (Behind a flag)")])
 
-export interface FeatureDetailResponse {
-  features_by_type: FeatureDetails
-  total_count: number
-}
+export type TimeRecord = z.infer<typeof TimeRecord>;
+export const TimeRecord = z.object({
+  by: z.string(),
+  when: z.string(),
+})
 
-export interface FeatureDetail {
-  activation_risks: string;
-  all_platforms: boolean;
-  all_platforms_descr: string;
-  api_spec: boolean;
-  category: string;
-  comments: string;
-  debuggability: string;
-  deleted: boolean;
-  ergonomics_risks: string;
-  experiment_extension_reason: string;
-  experiment_goals: string;
-  experiment_risks: string;
-  explainer_links: string[];
-  feature_type: string;
-  flag_name: string;
-  intent_stage: string;
-  interop_compat_risks: string;
-  launch_bug_url: string;
-  measurement: string;
-  motivation: string;
-  name: string;
-  ongoing_constraints: string;
-  privacy_review_status: string;
-  requires_embedder_support: boolean;
-  security_review_status: string;
-  security_risks: string;
-  star_count: number;
-  summary: string;
-  tag_review: string;
-  tag_review_status: string;
-  unlisted: boolean;
-  wpt: boolean;
-  wpt_descr: string;
-  is_released: boolean;
-  id: number;
-  feature_type_int: number;
-  intent_stage_int: number;
-  created: TimeRecord;
-  updated: TimeRecord;
-  standards: Standards;
-  resources: {
-    docs: string[];
-  };
-  browsers: {
-    chrome: Chrome;
-    ff: Browser;
-    edge: Browser;
-    safari: Browser;
-    webdev: Browser;
-    other: Browser;
-  };
-}
+export type Standards = z.infer<typeof Standards>;
+export const Standards = z.object({
+  spec: z.string(),
+  status: z.object({
+    text: z.string(),
+    val: z.number(),
+  }),
+  maturity: z.object({
+    text: z.string(),
+    short_text: z.string(),
+    val: z.number(),
+  }),
+})
 
-interface TimeRecord {
-  by: string;
-  when: string;
-}
+export type Chrome = z.infer<typeof Chrome>;
+export const Chrome = z.object({
+  bug: z.string(),
+  blink_components: z.array(z.string()),
+  owners: z.array(z.string()),
+  origintrial: z.boolean(),
+  intervention: z.boolean(),
+  prefixed: z.boolean(),
+  flag: z.boolean(),
+  status: z.object({
+    text: z.string(),
+    val: z.number(),
+    milestone_str: z.string(),
+  }),
+  desktop: z.number(),
+  android: z.number(),
+  webview: z.number(),
+})
 
-interface Standards {
-  spec: string;
-  status: {
-    text: string;
-    val: number;
-  };
-  maturity: {
-    text: string;
-    short_text: string;
-    val: number;
-  };
-}
+export type Browser = z.infer<typeof Browser>;
+export const Browser = z.object({
+  view: z.object({
+    text: z.string(),
+    val: z.number(),
+    url: z.string().optional(),
+    notes: z.string().optional(),
+  }),
+})
 
-interface Chrome {
-  bug: string;
-  blink_components: string[];
-  owners: string[];
-  origintrial: boolean;
-  intervention: boolean;
-  prefixed: boolean;
-  flag: boolean;
-  status: {
-    text: string;
-    val: number;
-    milestone_str: string;
-  };
-  desktop: number;
-  android: number;
-  webview: number;
-}
+export type FeatureDetail = z.infer<typeof FeatureDetail>;
+export const FeatureDetail = z.object({
+  activation_risks: z.string(),
+  all_platforms: z.boolean(),
+  all_platforms_descr: z.string(),
+  api_spec: z.boolean(),
+  category: z.string(),
+  comments: z.string(),
+  debuggability: z.string(),
+  deleted: z.boolean(),
+  ergonomics_risks: z.string(),
+  experiment_extension_reason: z.string(),
+  experiment_goals: z.string(),
+  experiment_risks: z.string(),
+  explainer_links: z.array(z.string()),
+  feature_type: z.string(),
+  flag_name: z.string(),
+  intent_stage: z.string(),
+  interop_compat_risks: z.string(),
+  launch_bug_url: z.string(),
+  measurement: z.string(),
+  motivation: z.string(),
+  name: z.string(),
+  ongoing_constraints: z.string(),
+  privacy_review_status: z.string(),
+  requires_embedder_support: z.boolean(),
+  security_review_status: z.string(),
+  security_risks: z.string(),
+  star_count: z.number(),
+  summary: z.string(),
+  tag_review: z.string(),
+  tag_review_status: z.string(),
+  unlisted: z.boolean(),
+  wpt: z.boolean(),
+  wpt_descr: z.string(),
+  is_released: z.boolean(),
+  id: z.number(),
+  feature_type_int: z.number(),
+  intent_stage_int: z.number(),
+  created: TimeRecord,
+  updated: TimeRecord,
+  standards: Standards,
+  resources: z.object({
+    docs: z.array(z.string()),
+  }),
+  browsers: z.object({
+    chrome: Chrome,
+    ff: Browser,
+    edge: Browser,
+    safari: Browser,
+    webdev: Browser,
+    other: Browser,
+  }),
+})
 
-interface Browser {
-  view: {
-    text: string;
-    val: number;
-    url?: string;
-    notes?: string;
-  };
-}
+export type FeatureDetails = z.infer<typeof FeatureDetails>;
+export const FeatureDetails = z.record(FeatureType, z.array(FeatureDetail))
+
+export type FeatureDetailResponse = z.infer<typeof FeatureDetailResponse>;
+export const FeatureDetailResponse = z.object({
+  features_by_type: FeatureDetails,
+  total_count: z.number()
+})

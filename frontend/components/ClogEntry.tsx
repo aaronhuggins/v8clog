@@ -5,44 +5,48 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts";
-import { MilestoneEntry, V8Metadata } from "../../backend/V8Metadata.ts";
-import { Milestone } from "./Milestone.tsx";
+import { Release, ReleaseInput } from "./Release.tsx";
 import { Meta } from "./Meta.tsx";
+import { V8ChangeLog } from "../../backend/v8/V8ChangeLog.ts";
+import { V8Release } from "../../backend/v8/V8Release.ts";
 
 function inc(version: string, step = 1) {
-  return V8Metadata.toV8Version(V8Metadata.toVersion(version) + step);
+  return V8Release.getVersion(V8Release.getMilestone(version) + step);
 }
 
 function dec(version: string, step = 1) {
-  return V8Metadata.toV8Version(V8Metadata.toVersion(version) - step);
+  return V8Release.getVersion(V8Release.getMilestone(version) - step);
 }
 
 export function ClogEntry(
-  { detail, features, origin, apiChanges }: MilestoneEntry & { origin: string },
+  { release, origin, v8clog }: ReleaseInput & {
+    origin: string;
+    v8clog: V8ChangeLog;
+  },
 ) {
   const path = (version: string) => `/clog/${version}`;
-  const prevPrev = dec(detail.mstone, 2);
-  const prev = dec(detail.mstone);
-  const next = inc(detail.mstone);
-  const nextNext = inc(detail.mstone, 2);
-  const showPrevPrev = detail.mstone !== V8Metadata.start &&
-    prev !== V8Metadata.start;
-  const showPrev = detail.mstone !== V8Metadata.start;
-  const showNext = detail.mstone !== V8Metadata.end;
-  const showNextNext = detail.mstone !== V8Metadata.end &&
-    next !== V8Metadata.end;
+  const prevPrev = dec(release.version, 2);
+  const prev = dec(release.version);
+  const next = inc(release.version);
+  const nextNext = inc(release.version, 2);
+  const showPrevPrev =
+    release.version !== V8Release.getVersion(v8clog.earliest) &&
+    prev !== V8Release.getVersion(v8clog.earliest);
+  const showPrev = release.version !== V8Release.getVersion(v8clog.earliest);
+  const showNext = release.version !== V8Release.getVersion(v8clog.latest);
+  const showNextNext =
+    release.version !== V8Release.getVersion(v8clog.latest) &&
+    next !== V8Release.getVersion(v8clog.latest);
 
   return (
     <div class="uk-container">
       <Meta
         origin={origin}
-        name={`V8 release v${detail.mstone}`}
-        path={path(detail.mstone)}
+        name={`V8 release v${release.version}`}
+        path={path(release.version)}
       />
-      <Milestone
-        detail={detail}
-        apiChanges={apiChanges}
-        data={features}
+      <Release
+        release={release}
         sep={false}
       />
       <div class="uk-margin-top uk-flex uk-flex-center uk-width-1-1">
@@ -61,7 +65,7 @@ export function ClogEntry(
               : <span class="uk-icon pager-span" uk-icon="chevron-left"></span>}
           </li>
           <li>
-            <a href={path(detail.mstone)} uk-icon="table"></a>
+            <a href={path(release.version)} uk-icon="table"></a>
           </li>
           <li>
             {showNext

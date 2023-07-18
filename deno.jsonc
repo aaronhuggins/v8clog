@@ -1,19 +1,23 @@
 {
   "tasks": {
     "clean": "rm -rf ./data",
-    "seed": "deno run -A ./script/seed.ts",
+    "seed": "deno run --unstable -A ./script/seed.ts",
     "rebuild": "deno task clean && deno task seed",
-    "dev": "deno run -A --watch ./app.ts",
-    "prod": "deno run -A ./app.ts"
+    "dev": "deno run --unstable -A --watch ./app.ts",
+    "prod": "deno run --unstable -A ./app.ts"
   },
   "fmt": {
     "files": {
-      "exclude": ["static/"]
+      "exclude": [
+        "static/"
+      ]
     }
   },
   "lint": {
     "files": {
-      "exclude": ["static/"]
+      "exclude": [
+        "static/"
+      ]
     }
   }
 }

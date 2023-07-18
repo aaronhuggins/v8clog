@@ -5,21 +5,11 @@
 /// <reference lib="deno.ns" />
 
 import { h, Helmet } from "../jsx.ts";
-import { V8Metadata } from "../../backend/V8Metadata.ts";
-import { Milestone } from "./Milestone.tsx";
-import { FeatureData } from "../../backend/FeatureData.ts";
 
-const getData = async () => {
-  const metadata = new V8Metadata();
-  const latest = await metadata.channelDetails();
-  return await metadata.allDetailsInRange({
-    start: latest.stable.mstone,
-    end: latest.canary.mstone,
-  });
-};
-const data = await getData();
-
-export function Home({ origin }: { origin: string }) {
+export function Home(
+  // deno-lint-ignore no-explicit-any
+  { origin, children }: { origin: string; children?: any[] | any },
+) {
   const name = "V8 Clog";
   const description =
     "The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine";
@@ -41,15 +31,7 @@ export function Home({ origin }: { origin: string }) {
       <p class="lead uk-text-primary uk-text-large uk-text-center">
         {description}
       </p>
-      {data.map((val, index) => {
-        return (
-          <Milestone
-            detail={val.detail}
-            data={val.features}
-            sep={index !== data.length - 1}
-          />
-        );
-      })}
+      {children}
       <p class="uk-light uk-text-center">
         <a href="/clog">More releases...</a>
       </p>
