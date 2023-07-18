@@ -43,8 +43,6 @@ export const RSS = xml(
           {data.map((val) => (
             <RSSItem
               release={val.release}
-              features={val.features}
-              changes={val.changes}
               origin={origin}
             />
           ))}
@@ -56,8 +54,9 @@ export const RSS = xml(
 );
 
 function RSSItem(
-  { release, features, changes, origin }: MilestoneInput & { origin: string },
+  { release, origin }: MilestoneInput & { origin: string },
 ) {
+  const features = release.features!;
   return (
     <item>
       <title>V8 release v{release.version}</title>
@@ -71,7 +70,7 @@ function RSSItem(
         )
         : <category>No New Features</category>}
       <description>
-        <MilestoneBody features={features} changes={changes} style={false} />
+        <MilestoneBody release={release} style={false} />
       </description>
     </item>
   );

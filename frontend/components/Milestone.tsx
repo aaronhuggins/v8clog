@@ -4,13 +4,11 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { V8Change } from "../../backend/v8/V8Change.ts";
-import { V8Feature } from "../../backend/v8/V8Feature.ts";
 import { V8Release } from "../../backend/v8/V8Release.ts";
 import { h } from "../jsx.ts";
 
 export function Milestone(
-  { release, features, changes, style = true, sep = true }: MilestoneInput,
+  { release, style = true, sep = true }: MilestoneInput,
 ) {
   return (
     <div>
@@ -31,12 +29,12 @@ export function Milestone(
               {new Date(release.stable_date).toDateString()}
             </time>
           </p>
-          {features.length > 0
+          {release.features!.length > 0
             ? (
               <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
                 Tags:
                 {Array.from(
-                  new Set(features.map((feat) => feat.category)),
+                  new Set(release.features!.map((feat) => feat.category)),
                   (tag) => (
                     <span class="uk-label uk-margin-small-left">{tag}</span>
                   ),
@@ -45,7 +43,7 @@ export function Milestone(
             )
             : null}
         </div>
-        <MilestoneBody features={features} changes={changes} style={style} />
+        <MilestoneBody release={release} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
           <p>
             <a href={`/clog/${release.version}`}>Permalink</a>
@@ -58,27 +56,30 @@ export function Milestone(
 }
 
 export function MilestoneBody(
-  { features, changes, style = true }: Omit<MilestoneInput, "release">,
+  { release, style = true }: MilestoneInput,
 ) {
   return (
     <div>
-      {features.length > 0 ? null : (
-        <div class={style ? "uk-card-body" : ""}>
-          <p>No new features in this version.</p>
-        </div>
-      )}
+      {release.features!.length > 0
+        ? null
+        : (
+          <div class={style ? "uk-card-body" : ""}>
+            <p>No new features in this version.</p>
+          </div>
+        )}
       <MilestoneFeatures
-        features={features}
+        release={release}
         style={style}
       />
-      <MilestoneAPIChanges changes={changes} style={style} />
+      <MilestoneAPIChanges release={release} style={style} />
     </div>
   );
 }
 
 function MilestoneFeatures(
-  { features, style = true }: CategoryInput,
+  { release, style = true }: CategoryInput,
 ) {
+  const features = release.features!;
   if (features.length === 0) return null;
 
   return (
@@ -117,8 +118,9 @@ function MilestoneFeatures(
 }
 
 function MilestoneAPIChanges(
-  { changes, style = true }: { changes?: V8Change[]; style?: boolean },
+  { release, style = true }: { release: V8Release; style?: boolean },
 ) {
+  const changes = release.changes;
   if (!changes || changes.length === 0) return null;
 
   return (
@@ -149,13 +151,11 @@ function MilestoneAPIChanges(
 
 export interface MilestoneInput {
   release: V8Release;
-  features: V8Feature[];
-  changes?: V8Change[];
   style?: boolean;
   sep?: boolean;
 }
 
 interface CategoryInput {
-  features: V8Feature[];
+  release: V8Release;
   style?: boolean;
 }

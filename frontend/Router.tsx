@@ -86,10 +86,10 @@ export class Router {
               <Home origin={route.url.origin}>
                 {await Promise.all(
                   releases.reverse().map(async (val, index) => {
+                    await val.getFeatures();
                     return (
                       <Milestone
                         release={val}
-                        features={await val.getFeatures()}
                         sep={index !== releases.length - 1}
                       />
                     );
@@ -110,15 +110,13 @@ export class Router {
           if (route.params.version) {
             try {
               const release = await v8clog.getRelease(route.params.version);
-              const features = await release.getFeatures();
-              const changes = await release.getChanges();
+              await release.getFeatures();
+              await release.getChanges();
 
               return this.#renderHTML(
                 <App active="none">
                   <ClogEntry
                     release={release}
-                    features={features}
-                    changes={changes}
                     origin={route.url.origin}
                     v8clog={v8clog}
                   />

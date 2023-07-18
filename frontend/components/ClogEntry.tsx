@@ -19,7 +19,7 @@ function dec(version: string, step = 1) {
 }
 
 export function ClogEntry(
-  { release, features, origin, changes, v8clog }: MilestoneInput & {
+  { release, origin, v8clog }: MilestoneInput & {
     origin: string;
     v8clog: V8ChangeLog;
   },
@@ -47,8 +47,6 @@ export function ClogEntry(
       />
       <Milestone
         release={release}
-        features={features}
-        changes={changes}
         sep={false}
       />
       <div class="uk-margin-top uk-flex uk-flex-center uk-width-1-1">
