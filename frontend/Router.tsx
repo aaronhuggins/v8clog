@@ -171,23 +171,14 @@ export class Router {
           });
         }
         case "/rss.xml": {
-          const latest = await v8clog.getLatest();
-          const data = await Promise.all(
-            (await v8clog.getRange(v8clog.earliest, latest.milestone)).map(
-              async (release) => {
-                const [features, changes] = await Promise.all([
-                  release.getFeatures(),
-                  release.getChanges(),
-                ]);
-                return {
-                  release,
-                  features,
-                  changes,
-                };
-              },
-            ),
+          await v8clog.getLatest();
+          const releases = await v8clog.getAllData(
+            v8clog.earliest,
+            v8clog.latest,
           );
-          return this.#renderRSS(<RSS origin={route.url.origin} data={data} />);
+          return this.#renderRSS(
+            <RSS origin={route.url.origin} releases={releases} />,
+          );
         }
         case "/static": {
           const file = this.#staticCache.get(route.url.href) ??

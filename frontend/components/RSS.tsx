@@ -4,9 +4,9 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
+import { V8Release } from "../../backend/v8/V8Release.ts";
 import { createXMLHandler, h, xml } from "../jsx.ts";
 import { ReleaseBody, ReleaseInput } from "./Release.tsx";
-import { ReleaseData } from "../../backend/v8/V8ChangeLog.ts";
 
 const x = createXMLHandler(h);
 const getPubDate = (date: Date) => {
@@ -26,7 +26,9 @@ const getPubDate = (date: Date) => {
 };
 
 export const RSS = xml(
-  function RSS({ origin, data }: { origin: string; data: ReleaseData[] }) {
+  function RSS(
+    { origin, releases }: { origin: string; releases: V8Release[] },
+  ) {
     return (
       <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
         <channel>
@@ -40,9 +42,9 @@ export const RSS = xml(
             rel="self"
             type="application/rss+xml"
           />
-          {data.map((val) => (
+          {releases.map((release) => (
             <RSSItem
-              release={val.release}
+              release={release}
               origin={origin}
             />
           ))}
