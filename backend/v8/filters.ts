@@ -36,7 +36,7 @@ export const isAuthor = (author: Entity) =>
   author.name.match(excludeAuthor) === null;
 
 export const isRelevant = (message: string) =>
-  message.match(messageIrrelevant) !== null;
+  message.match(messageIrrelevant) === null;
 
 const _isV8 = (diffs: DiffEntry[]) =>
   diffs.some((diff) => {
