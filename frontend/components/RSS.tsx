@@ -58,18 +58,14 @@ export const RSS = xml(
 function RSSItem(
   { release, origin }: ReleaseInput & { origin: string },
 ) {
-  const features = release.features!;
   return (
     <item>
       <title>V8 release v{release.version}</title>
       <link>{origin}/clog/{release.version}</link>
       <guid>{origin}/clog/{release.version}</guid>
       <pubDate>{getPubDate(new Date(release.stable_date))}</pubDate>
-      {features.length > 0
-        ? Array.from(
-          new Set(features.map((feat) => feat.category)),
-          (tag) => <category>{tag}</category>,
-        )
+      {release.tags.length > 0
+        ? release.tags.map((tag) => <category>{tag}</category>)
         : <category>No New Features</category>}
       <description>
         <ReleaseBody release={release} style={false} />

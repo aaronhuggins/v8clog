@@ -29,16 +29,13 @@ export function Release(
               {new Date(release.stable_date).toDateString()}
             </time>
           </p>
-          {release.features!.length > 0
+          {release.tags.length > 0
             ? (
               <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
                 Tags:
-                {Array.from(
-                  new Set(release.features!.map((feat) => feat.category)),
-                  (tag) => (
-                    <span class="uk-label uk-margin-small-left">{tag}</span>
-                  ),
-                )}
+                {release.tags.map((tag) => (
+                  <span class="uk-label uk-margin-small-left">{tag}</span>
+                ))}
               </p>
             )
             : null}

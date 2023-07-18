@@ -40,7 +40,7 @@ export const isRelevant = (message: string) =>
 export const filterTags = (subject: string): string[] => {
   const tagRe = /\[([A-Za-z0-9\+_\-]+)\]/gui;
   return (subject.match(tagRe) ?? []).map((tag) =>
-    tag.substring(1, tag.length - 1)
+    tag.substring(1, tag.length - 1).toLowerCase()
   );
 };
 const _isV8 = (diffs: DiffEntry[]) =>
