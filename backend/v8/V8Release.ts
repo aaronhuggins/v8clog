@@ -5,6 +5,7 @@ import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
 import { filterTags, isAuthor, isRelevant } from "./filters.ts";
+import { V8Tag } from "./V8Tag.ts";
 
 export type V8ReleaseMeta = {
   stable_date: string;
@@ -37,6 +38,7 @@ export class V8Release {
   #database: JSONDB;
   #features: Collection<V8Feature>;
   #changes: Collection<V8Change>;
+  #tags: Collection<V8Tag>;
   #docQuery = (doc: Document<{ milestone: number }>) =>
     doc.milestone === this.milestone;
   milestone: number;
@@ -51,6 +53,7 @@ export class V8Release {
     this.#database = options.database;
     this.#features = this.#database.get<V8Feature>(V8.FEATURES);
     this.#changes = this.#database.get<V8Change>(V8.CHANGES);
+    this.#tags = this.#database.get<V8Tag>(V8.TAGS);
     this.#gitiles = options.gitiles;
     this.stable_date = options.stable_date;
     this.tags = [];
@@ -74,15 +77,22 @@ export class V8Release {
         await this.getChanges();
       }
     }
-    const tags = new Set<string>(
+    const tagSet = new Set<string>(
       this.features!.map((feature) => feature.category),
     );
     for (const change of this.changes ?? []) {
       for (const tag of filterTags(change.subject)) {
-        tags.add(tag);
+        tagSet.add(tag);
       }
     }
-    return this.tags = Array.from(tags);
+    const tags = Array.from(tagSet);
+    await this.#tags.putAll(tags.map(async (name) => {
+      const tag = await this.#tags.getSafely(name);
+      const v8tag = tag ? new V8Tag(tag) : new V8Tag(name);
+      v8tag.add(this.milestone);
+      return this.#tags.document(name, v8tag);
+    }));
+    return this.tags = tags;
   }
 
   async getFeatures() {

@@ -5,4 +5,5 @@ export const V8 = {
   CHANGES: "v8_changes",
   FEATURES: "v8_features",
   RELEASES: "v8_releases",
-};
+  TAGS: "v8_tags",
+} as const;
