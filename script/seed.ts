@@ -7,8 +7,8 @@ await Promise.all(
   (await v8clog.getRange(v8clog.earliest, latest.milestone + 3)).map(
     async (release) => {
       const [features, changes] = await Promise.all([
-        release.features(),
-        release.changes(),
+        release.getFeatures(),
+        release.getChanges(),
       ]);
       return {
         release,

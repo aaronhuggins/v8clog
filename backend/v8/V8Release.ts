@@ -58,7 +58,7 @@ export class V8Release {
     }
   }
 
-  async features() {
+  async getFeatures() {
     const features = await this.#features.query(this.#docQuery) ?? [];
     if (features.length === 1) {
       return V8Feature.isNone(features[0])
@@ -96,7 +96,7 @@ export class V8Release {
     return mapped;
   }
 
-  async changes() {
+  async getChanges() {
     const changes = await this.#changes.query(this.#docQuery) ?? [];
     if (changes.length === 1) {
       return V8Commit.isNone(changes[0])

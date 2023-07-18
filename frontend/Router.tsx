@@ -89,7 +89,7 @@ export class Router {
                     return (
                       <Milestone
                         release={val}
-                        features={await val.features()}
+                        features={await val.getFeatures()}
                         sep={index !== releases.length - 1}
                       />
                     );
@@ -110,8 +110,8 @@ export class Router {
           if (route.params.version) {
             try {
               const release = await v8clog.getRelease(route.params.version);
-              const features = await release.features();
-              const changes = await release.changes();
+              const features = await release.getFeatures();
+              const changes = await release.getChanges();
 
               return this.#renderHTML(
                 <App active="none">
@@ -178,8 +178,8 @@ export class Router {
             (await v8clog.getRange(v8clog.earliest, latest.milestone)).map(
               async (release) => {
                 const [features, changes] = await Promise.all([
-                  release.features(),
-                  release.changes(),
+                  release.getFeatures(),
+                  release.getChanges(),
                 ]);
                 return {
                   release,
