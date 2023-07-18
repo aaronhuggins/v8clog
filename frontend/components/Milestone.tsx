@@ -4,7 +4,7 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import { V8Commit } from "../../backend/v8/V8Change.ts";
+import { V8Change } from "../../backend/v8/V8Change.ts";
 import { V8Feature } from "../../backend/v8/V8Feature.ts";
 import { V8Release } from "../../backend/v8/V8Release.ts";
 import { h } from "../jsx.ts";
@@ -117,7 +117,7 @@ function MilestoneFeatures(
 }
 
 function MilestoneAPIChanges(
-  { changes, style = true }: { changes?: V8Commit[]; style?: boolean },
+  { changes, style = true }: { changes?: V8Change[]; style?: boolean },
 ) {
   if (!changes || changes.length === 0) return null;
 
@@ -150,7 +150,7 @@ function MilestoneAPIChanges(
 export interface MilestoneInput {
   release: V8Release;
   features: V8Feature[];
-  changes?: V8Commit[];
+  changes?: V8Change[];
   style?: boolean;
   sep?: boolean;
 }

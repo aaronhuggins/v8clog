@@ -2,16 +2,16 @@ import { CommitDetail, Entity } from "../deps.ts";
 
 const NO_COMMITS = "NO_COMMITS" as const;
 
-export class V8Commit
+export class V8Change
   implements Omit<CommitDetail, "tree" | "parents" | "tree_diff"> {
   static none(milestone: number) {
-    const commit = new V8Commit();
+    const commit = new V8Change();
     commit.milestone = milestone;
     commit.message = NO_COMMITS;
     return commit;
   }
 
-  static isNone(commit: V8Commit): boolean {
+  static isNone(commit: V8Change): boolean {
     return commit.message === NO_COMMITS;
   }
 
@@ -21,7 +21,7 @@ export class V8Commit
   message!: string;
   milestone!: number;
 
-  constructor(commitLike?: Omit<V8Commit, "subject" | "body">) {
+  constructor(commitLike?: Omit<V8Change, "subject" | "body">) {
     if (commitLike) {
       this.author = { ...commitLike.author };
       this.commit = commitLike.commit;

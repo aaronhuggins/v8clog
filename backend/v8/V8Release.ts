@@ -1,7 +1,7 @@
 import type { ChromestatusAPI } from "../chromestatus/API.ts";
 import type { Collection, Document, JSONDB } from "../jsondb/JSONDB.ts";
 import { V8Feature } from "./V8Feature.ts";
-import { V8Commit } from "./V8Change.ts";
+import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
 import { isAuthor, isRelevant } from "./filters.ts";
@@ -35,20 +35,20 @@ export class V8Release {
   #chromestatus: ChromestatusAPI;
   #database: JSONDB;
   #features: Collection<V8Feature>;
-  #changes: Collection<V8Commit>;
+  #changes: Collection<V8Change>;
   #docQuery = (doc: Document<{ milestone: number }>) =>
     doc.milestone === this.milestone;
   milestone: number;
   version: string;
   stable_date: string;
   features?: V8Feature[];
-  changes?: V8Commit[];
+  changes?: V8Change[];
 
   constructor(options: V8ReleaseOpts) {
     this.#chromestatus = options.chromestatus;
     this.#database = options.database;
     this.#features = this.#database.get<V8Feature>(V8.FEATURES);
-    this.#changes = this.#database.get<V8Commit>(V8.CHANGES);
+    this.#changes = this.#database.get<V8Change>(V8.CHANGES);
     this.#gitiles = options.gitiles;
     this.stable_date = options.stable_date;
     if ("milestone" in options) {
@@ -107,11 +107,11 @@ export class V8Release {
     }
     const changes = await this.#changes.query(this.#docQuery) ?? [];
     if (changes.length === 1) {
-      return V8Commit.isNone(changes[0])
+      return V8Change.isNone(changes[0])
         ? this.changes = []
-        : this.changes = changes.map((doc) => new V8Commit(doc));
+        : this.changes = changes.map((doc) => new V8Change(doc));
     } else if (changes.length > 0) {
-      return this.changes = changes.map((doc) => new V8Commit(doc));
+      return this.changes = changes.map((doc) => new V8Change(doc));
     }
     const prevVer = V8Release.getVersion(this.milestone - 1);
     const results = this.#gitiles.getLogs(
@@ -122,11 +122,11 @@ export class V8Release {
         limit: 10000,
       },
     );
-    const promises: Promise<V8Commit>[] = [];
+    const promises: Promise<V8Change>[] = [];
     for await (const result of results) {
       if (isAuthor(result.author) && isRelevant(result.message)) {
-        promises.push((async (): Promise<V8Commit> => {
-          const v8change = new V8Commit({
+        promises.push((async (): Promise<V8Change> => {
+          const v8change = new V8Change({
             ...result,
             milestone: this.milestone,
           });
@@ -142,7 +142,7 @@ export class V8Release {
       await this.#changes.put(
         this.#changes.document(
           `${this.milestone}`,
-          V8Commit.none(this.milestone),
+          V8Change.none(this.milestone),
         ),
       );
     }
