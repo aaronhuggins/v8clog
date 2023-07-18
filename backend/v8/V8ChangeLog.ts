@@ -157,14 +157,13 @@ export class V8ChangeLog {
     };
     const getAllChanges = async () => {
       const changeMap = new Map<number, V8Change[]>();
-      const promises: Promise<void>[] = [];
       const getChanges = async (
         previous: string,
         version: string,
         milestone: number,
       ) => {
         const changes: V8Change[] = [];
-        const results = await this.#gitiles.getLogs(
+        const results = this.#gitiles.getLogs(
           `branch-heads/${previous}..branch-heads/${version}`,
           {
             path: "include",
@@ -184,12 +183,21 @@ export class V8ChangeLog {
         }
         changeMap.set(milestone, changes);
       };
-      for (let i = start; start < end; i++) {
+      const limit = 50;
+      let promises: Promise<void>[] = [];
+      for (let i = start; !(i > end); i++) {
         const previous = V8Release.getVersion(i - 1);
         const version = V8Release.getVersion(i);
         promises.push(getChanges(previous, version, i));
+        if (promises.length === limit) {
+          await Promise.all(promises);
+          promises = [];
+        }
       }
-      await Promise.all(promises);
+      if (promises.length > 0) {
+        await Promise.all(promises);
+        promises = [];
+      }
       return changeMap;
     };
     const [releases, changes, features] = await Promise.all([
@@ -199,7 +207,7 @@ export class V8ChangeLog {
     ]);
     for (const release of releases) {
       release.changes = changes.get(release.milestone);
-      release.features = features.get(release.milestone);
+      release.features = features.get(release.milestone) ?? [];
       if (release.changes!.length === 0) {
         await changesCol.put(
           changesCol.document(
