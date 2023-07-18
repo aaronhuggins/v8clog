@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { createXMLHandler, h, xml } from "../jsx.ts";
-import { MilestoneBody, MilestoneInput } from "./Milestone.tsx";
+import { MilestoneBody, MilestoneInput } from "./Release.tsx";
 import { ReleaseData } from "../../backend/v8/V8ChangeLog.ts";
 
 const x = createXMLHandler(h);
