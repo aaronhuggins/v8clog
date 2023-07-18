@@ -137,8 +137,10 @@ export class V8ChangeLog {
           const release = this.#metaRelease(hasRelease);
           release.features = V8Feature.isNone(hasFeatures[0])
             ? []
-            : hasFeatures;
-          release.changes = V8Change.isNone(hasChanges[0]) ? [] : hasChanges;
+            : hasFeatures.map((doc) => new V8Feature(doc));
+          release.changes = V8Change.isNone(hasChanges[0])
+            ? []
+            : hasChanges.map((doc) => new V8Change(doc));
           skippable.set(i, release);
         }
       }
