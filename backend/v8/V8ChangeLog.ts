@@ -239,9 +239,3 @@ export class V8ChangeLog {
     await this.#database.commit();
   }
 }
-
-export type ReleaseData = {
-  release: V8Release;
-  features: V8Feature[];
-  changes: V8Change[];
-};
