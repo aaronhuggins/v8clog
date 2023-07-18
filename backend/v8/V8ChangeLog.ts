@@ -144,7 +144,7 @@ export class V8ChangeLog {
       }
     }
     if (skippable.size === end - start + 1) {
-      return Array.from(skippable.values());
+      return Array.from(skippable.values()).reverse();
     }
     const getAllFeatures = async () => {
       const [js, wasm] = await Promise.all([
