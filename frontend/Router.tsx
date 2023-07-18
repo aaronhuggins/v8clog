@@ -21,7 +21,7 @@ import { StaticFile } from "../backend/StaticFile.ts";
 import { About } from "./components/About.tsx";
 import { V8ChangeLog } from "../backend/v8/V8ChangeLog.ts";
 import { V8Release } from "../backend/v8/V8Release.ts";
-import { Milestone } from "./components/Release.tsx";
+import { Release } from "./components/Release.tsx";
 import { BACKEND_TYPE } from "../backend/constants.ts";
 
 const renderXML = createXMLRenderer(renderSSR);
@@ -88,7 +88,7 @@ export class Router {
                   releases.reverse().map(async (val, index) => {
                     await val.getFeatures();
                     return (
-                      <Milestone
+                      <Release
                         release={val}
                         sep={index !== releases.length - 1}
                       />

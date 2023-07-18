@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { h } from "../jsx.ts";
-import { Milestone, MilestoneInput } from "./Release.tsx";
+import { Release, ReleaseInput } from "./Release.tsx";
 import { Meta } from "./Meta.tsx";
 import { V8ChangeLog } from "../../backend/v8/V8ChangeLog.ts";
 import { V8Release } from "../../backend/v8/V8Release.ts";
@@ -19,7 +19,7 @@ function dec(version: string, step = 1) {
 }
 
 export function ClogEntry(
-  { release, origin, v8clog }: MilestoneInput & {
+  { release, origin, v8clog }: ReleaseInput & {
     origin: string;
     v8clog: V8ChangeLog;
   },
@@ -45,7 +45,7 @@ export function ClogEntry(
         name={`V8 release v${release.version}`}
         path={path(release.version)}
       />
-      <Milestone
+      <Release
         release={release}
         sep={false}
       />

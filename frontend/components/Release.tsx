@@ -7,8 +7,8 @@
 import { V8Release } from "../../backend/v8/V8Release.ts";
 import { h } from "../jsx.ts";
 
-export function Milestone(
-  { release, style = true, sep = true }: MilestoneInput,
+export function Release(
+  { release, style = true, sep = true }: ReleaseInput,
 ) {
   return (
     <div>
@@ -43,7 +43,7 @@ export function Milestone(
             )
             : null}
         </div>
-        <MilestoneBody release={release} style={style} />
+        <ReleaseBody release={release} style={style} />
         <div class={style ? "uk-card-footer" : ""}>
           <p>
             <a href={`/clog/${release.version}`}>Permalink</a>
@@ -55,8 +55,8 @@ export function Milestone(
   );
 }
 
-export function MilestoneBody(
-  { release, style = true }: MilestoneInput,
+export function ReleaseBody(
+  { release, style = true }: ReleaseInput,
 ) {
   return (
     <div>
@@ -67,17 +67,17 @@ export function MilestoneBody(
             <p>No new features in this version.</p>
           </div>
         )}
-      <MilestoneFeatures
+      <ReleaseFeatures
         release={release}
         style={style}
       />
-      <MilestoneAPIChanges release={release} style={style} />
+      <ReleaseChanges release={release} style={style} />
     </div>
   );
 }
 
-function MilestoneFeatures(
-  { release, style = true }: CategoryInput,
+function ReleaseFeatures(
+  { release, style = true }: FeatureInput,
 ) {
   const features = release.features!;
   if (features.length === 0) return null;
@@ -117,7 +117,7 @@ function MilestoneFeatures(
   );
 }
 
-function MilestoneAPIChanges(
+function ReleaseChanges(
   { release, style = true }: { release: V8Release; style?: boolean },
 ) {
   const changes = release.changes;
@@ -149,13 +149,13 @@ function MilestoneAPIChanges(
   );
 }
 
-export interface MilestoneInput {
+export interface ReleaseInput {
   release: V8Release;
   style?: boolean;
   sep?: boolean;
 }
 
-interface CategoryInput {
+interface FeatureInput {
   release: V8Release;
   style?: boolean;
 }

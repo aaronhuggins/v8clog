@@ -5,7 +5,7 @@
 /// <reference lib="deno.ns" />
 
 import { createXMLHandler, h, xml } from "../jsx.ts";
-import { MilestoneBody, MilestoneInput } from "./Release.tsx";
+import { ReleaseBody, ReleaseInput } from "./Release.tsx";
 import { ReleaseData } from "../../backend/v8/V8ChangeLog.ts";
 
 const x = createXMLHandler(h);
@@ -54,7 +54,7 @@ export const RSS = xml(
 );
 
 function RSSItem(
-  { release, origin }: MilestoneInput & { origin: string },
+  { release, origin }: ReleaseInput & { origin: string },
 ) {
   const features = release.features!;
   return (
@@ -70,7 +70,7 @@ function RSSItem(
         )
         : <category>No New Features</category>}
       <description>
-        <MilestoneBody release={release} style={false} />
+        <ReleaseBody release={release} style={false} />
       </description>
     </item>
   );
