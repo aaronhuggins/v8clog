@@ -114,7 +114,6 @@ export class Router {
           );
         }
         case "/tag": {
-          console.log(route.params);
           const releases = await v8clog.getByTag(route.params.tagname);
           await Promise.all(releases.map(async (release) => {
             await release.getFeatures();
