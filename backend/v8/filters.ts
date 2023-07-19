@@ -26,7 +26,7 @@ export function subjectTags(subject: string): string[] {
       tagStarted = false;
       const trimmed = tag.trim();
       if (!EXCLUDE.TAGS.includes(trimmed as typeof EXCLUDE["TAGS"][0])) {
-        tags.add(trimmed);
+        tags.add(normalizeTag(trimmed));
       }
     }
   }
