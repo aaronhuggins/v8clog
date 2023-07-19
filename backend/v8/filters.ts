@@ -136,6 +136,7 @@ const KEYWORDS: [string, string][] = Object.entries({
   "compile hints": "compile hints",
 });
 const NORMALIZE: Record<string, string> = {
+  "isolate": "isolate-data",
   "arraybuffer": "arraybuffers",
   "object": "objects",
   "function": "functions",
