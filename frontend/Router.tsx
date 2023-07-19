@@ -123,8 +123,8 @@ export class Router {
             <App active="clog">
               <Clog
                 origin={route.url.origin}
-                data={releases}
-                milestone={releases[0]?.milestone}
+                releases={releases}
+                tag={route.params.tagname}
                 limit={releases.length}
                 v8clog={v8clog}
               />
@@ -153,21 +153,21 @@ export class Router {
             }
           } else {
             const limit = +(route.params.limit ?? "20");
-            let data: V8Release[] = [];
+            let releases: V8Release[] = [];
             if (route.params.start) {
-              data = await v8clog.getRange(
+              releases = await v8clog.getRange(
                 +(route.params.start ?? "0"),
                 +(route.params.end ?? "0"),
               );
             } else if (route.params.milestone) {
               const milestone = +(route.params.milestone ?? "0");
-              data = await v8clog.getRange(
+              releases = await v8clog.getRange(
                 milestone - limit,
                 milestone,
               );
             } else {
               const latest = await v8clog.getLatest();
-              data = [
+              releases = [
                 latest,
                 ...(await v8clog.getRange(
                   latest.milestone - limit,
@@ -179,8 +179,8 @@ export class Router {
               <App active="clog">
                 <Clog
                   origin={route.url.origin}
-                  data={data}
-                  milestone={data[0].milestone}
+                  releases={releases}
+                  milestone={releases[0]?.milestone}
                   limit={limit}
                   v8clog={v8clog}
                 />
