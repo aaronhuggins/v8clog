@@ -17,6 +17,7 @@ export class V8ChangeLog {
   #chromestatus: ChromestatusAPI;
   #database: JSONDB;
   #releases: Collection<V8ReleaseMeta>;
+  #tags: Collection<V8Tag>;
   latest = 114;
   earliest = MIN_MILESTONE;
   constructor(backend: "json" | "deno_kv") {
@@ -30,6 +31,7 @@ export class V8ChangeLog {
       rate: 3,
     });
     this.#releases = this.#database.get<V8ReleaseMeta>(V8.RELEASES);
+    this.#tags = this.#database.get<V8Tag>(V8.TAGS);
   }
 
   async #cacheRelease(release: V8Release) {
@@ -94,6 +96,16 @@ export class V8ChangeLog {
     });
   }
 
+  async getByTag(name: string): Promise<V8Release[]> {
+    const tag = await this.#tags.getSafely(name);
+    if (tag) {
+      return Promise.all(
+        tag.milestones.map((milestone) => this.getRelease(milestone)),
+      );
+    }
+    return [];
+  }
+
   async getRange(start: number, end?: number): Promise<V8Release[]> {
     if (!end) {
       const { stable } = await this.#chromestatus.channels();
@@ -128,7 +140,6 @@ export class V8ChangeLog {
   async getAllData(start: number, end: number) {
     const featuresCol = this.#database.get<V8Feature>(V8.FEATURES);
     const changesCol = this.#database.get<V8Change>(V8.CHANGES);
-    const tagsCol = this.#database.get<V8Tag>(V8.TAGS);
     const skippable = new Map<number, V8Release>();
     for (let i = start; !(i > end); i++) {
       const hasRelease = await this.#releases.getSafely(`${i}`);
@@ -281,8 +292,11 @@ export class V8ChangeLog {
       }
     }
     await Promise.all([
-      tagsCol.putAll(
-        Array.from(tagsMap.values(), (tag) => tagsCol.document(tag.name, tag)),
+      this.#tags.putAll(
+        Array.from(
+          tagsMap.values(),
+          (tag) => this.#tags.document(tag.name, tag),
+        ),
       ),
       changesCol.putAll(
         Array.from(changes.values()).flat().map((change) =>
