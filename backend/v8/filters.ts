@@ -57,7 +57,10 @@ export function isRelevant(lower: string): boolean {
 
 export function isAuthor(author: Entity): boolean {
   for (const term of EXCLUDE.AUTHOR) {
-    if (author.name.includes(term) || author.email.includes(term)) {
+    if (
+      author.name.toLowerCase().includes(term) ||
+      author.email.toLowerCase().includes(term)
+    ) {
       return false;
     }
   }
