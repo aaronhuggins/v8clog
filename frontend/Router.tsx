@@ -31,7 +31,7 @@ export class Router {
   routes = new Map<RouteName, URLPattern | boolean>([
     ["/", true],
     ["/clog", new URLPattern({ pathname: "/clog/:version" })],
-    ["/tag", new URLPattern({ pathname: "/tag/:tagname" })],
+    ["/tag", new URLPattern({ pathname: "/tag/:tagname{/:feed}?" })],
     ["/rss.xml", true],
     ["/static", true],
     ["/about", true],
@@ -114,11 +114,17 @@ export class Router {
           );
         }
         case "/tag": {
+          console.log(route.params);
           const releases = await v8clog.getByTag(route.params.tagname);
           await Promise.all(releases.map(async (release) => {
             await release.getFeatures();
             await release.getChanges();
           }));
+          if (route.params.feed === "rss.xml") {
+            return this.#renderRSS(
+              <RSS origin={route.url.origin} releases={releases} />,
+            );
+          }
           return this.#renderHTML(
             <App active="clog">
               <Clog

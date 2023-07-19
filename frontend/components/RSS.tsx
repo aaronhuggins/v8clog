@@ -27,18 +27,23 @@ const getPubDate = (date: Date) => {
 
 export const RSS = xml(
   function RSS(
-    { origin, releases }: { origin: string; releases: V8Release[] },
+    { origin, releases, tag }: {
+      origin: string;
+      releases: V8Release[];
+      tag?: string;
+    },
   ) {
     return (
       <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
         <channel>
-          <title>V8 Clog</title>
-          <link>{origin}</link>
+          <title>{tag ? `V8 Clog posts with tag "${tag}"` : "V8 Clog"}</title>
+          <link>{tag ? `${origin}/tag/${tag}` : origin}</link>
           <description>
-            The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine.
+            The (Unofficial) Blog-style Changelog for the V8 JavaScript Engine
+            filtered by tag "{tag}"
           </description>
           <atomLink
-            href={`${origin}/rss.xml`}
+            href={tag ? `${origin}/${tag}/rss.xml` : `${origin}/rss.xml`}
             rel="self"
             type="application/rss+xml"
           />

@@ -56,7 +56,9 @@ export function Clog(
     <div class="uk-container">
       <Meta origin={origin} name={name} path="/clog" />
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
-        <h3>{name}</h3>
+        <h3>
+          {name} {tag ? <a href={`/tag/${tag}/rss.xml`} uk-icon="rss" /> : null}
+        </h3>
         <OrderedList milestone={milestone} tag={tag}>
           {releases.map((val) => {
             return (
