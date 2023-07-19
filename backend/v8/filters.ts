@@ -106,6 +106,7 @@ const EXCLUDE = {
     "(reland)",
     "rollback ",
     "version ",
+    "landing ",
   ] as const,
   CONTAINS: [
     "c++",
@@ -228,8 +229,10 @@ const NORMALIZE: Record<string, string> = {
   "logging": "log",
   "cpu-profiler": "profiler",
   "cpu profiler": "profiler",
+  "cpuprofiler": "profiler",
   "heap-profiler": "profiler",
   "heap profiler": "profiler",
+  "heapprofiler": "profiler",
   "embedder-tracing": "tracing",
   "embedder tracing": "tracing",
   "jobs-api": "jobs",
