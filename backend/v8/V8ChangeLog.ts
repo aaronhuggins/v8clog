@@ -96,8 +96,8 @@ export class V8ChangeLog {
     });
   }
 
-  async getByTag(name: string): Promise<V8Release[]> {
-    const tag = await this.#tags.getSafely(name);
+  async getByTag(tagname: string): Promise<V8Release[]> {
+    const tag = await this.#tags.getSafely(tagname.toLowerCase());
     if (tag) {
       return Promise.all(
         tag.milestones.map((milestone) => this.getRelease(milestone)),

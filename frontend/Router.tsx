@@ -31,6 +31,7 @@ export class Router {
   routes = new Map<RouteName, URLPattern | boolean>([
     ["/", true],
     ["/clog", new URLPattern({ pathname: "/clog/:version" })],
+    ["/tag", new URLPattern({ pathname: "/tag/:tagname" })],
     ["/rss.xml", true],
     ["/static", true],
     ["/about", true],
@@ -104,6 +105,24 @@ export class Router {
           return this.#renderHTML(
             <App active="about">
               <About origin={route.url.origin} />
+            </App>,
+          );
+        }
+        case "/tag": {
+          const releases = await v8clog.getByTag(route.params.tagname);
+          await Promise.all(releases.map(async (release) => {
+            await release.getFeatures();
+            await release.getChanges();
+          }));
+          return this.#renderHTML(
+            <App active="clog">
+              <Clog
+                origin={route.url.origin}
+                data={releases}
+                milestone={releases[0].milestone}
+                limit={releases.length}
+                v8clog={v8clog}
+              />
             </App>,
           );
         }
@@ -234,6 +253,7 @@ type RouteName =
   | "/"
   | "/clog"
   | "/static"
+  | "/tag"
   | "/rss.xml"
   | "/about"
   | "/robots.txt";
