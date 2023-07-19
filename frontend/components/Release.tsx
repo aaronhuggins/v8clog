@@ -36,9 +36,12 @@ export function Release(
               <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
                 <span class="uk-margin-small-bottom">Tags:</span>
                 {release.tags.map((tag) => (
-                  <span class="uk-label uk-margin-small-left uk-margin-small-bottom">
+                  <a
+                    href={`/tag/${tag}`}
+                    class="uk-label uk-margin-small-left uk-margin-small-bottom"
+                  >
                     {tag}
-                  </span>
+                  </a>
                 ))}
               </p>
             )
