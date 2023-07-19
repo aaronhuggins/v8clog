@@ -83,6 +83,7 @@ const EXCLUDE = {
     "v8-ci-autoroll-builder",
   ] as const,
   START: [
+    "[release",
     "rename",
     "merge r",
     "merged r",
