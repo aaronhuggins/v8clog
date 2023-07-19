@@ -12,8 +12,8 @@ export function subjectTags(subject: string): string[] {
   let tag = "";
   let tagStarted = false;
   for (const char of lower) {
-    const isStart = char === "[";
-    const isEnd = char === "]";
+    const isStart = char === SEP.BR1;
+    const isEnd = char === SEP.BR2;
     if (isEnd && tagStarted) {
       for (const subtag of subtagParser(tag)) {
         tags.add(subtag);
@@ -52,6 +52,8 @@ export function hasV8File(diffs: DiffEntry[]): boolean {
   );
 }
 const SEP = {
+  BR1: "[",
+  BR2: "]",
   COL: ":",
   COM: ",",
   SLS: "/",
@@ -172,18 +174,17 @@ function subtagParser(tag: string): string[] {
   }).filter((parsed) => parsed !== "").flat();
 }
 function prefixParser(lower: string): string[] {
-  const sep = ":";
-  const sepIndex = lower.indexOf(sep);
+  const sepIndex = lower.indexOf(SEP.COL);
   const tags: string[] = [];
   if (sepIndex > 0 && sepIndex !== lower.length - 1) {
     // Colon-pair or uri is a source code name, not a tag.
     const nextChar = lower[sepIndex + 1];
-    if (nextChar === sep || nextChar === "/") {
+    if (nextChar === SEP.COL || nextChar === SEP.SLS) {
       return tags;
     }
     const prefix = lower.substring(0, sepIndex).trim();
     // Tag-formatted prefix will be picked up by tag parser.
-    if (prefix.startsWith("[")) {
+    if (prefix.startsWith(SEP.BR1)) {
       return tags;
     }
     tags.push(...subtagParser(prefix));
