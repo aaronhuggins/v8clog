@@ -24,15 +24,17 @@ export function Release(
             </a>
           </h3>
           <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
-            Stable date:{" "}
-            <time datetime={release.stable_date}>
-              {new Date(release.stable_date).toDateString()}
-            </time>
+            <span class="uk-margin-small-bottom">
+              Stable date:{" "}
+              <time datetime={release.stable_date}>
+                {new Date(release.stable_date).toDateString()}
+              </time>
+            </span>
           </p>
           {release.tags.length > 0
             ? (
               <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
-                Tags:
+                <span class="uk-margin-small-bottom">Tags:</span>
                 {release.tags.map((tag) => (
                   <span class="uk-label uk-margin-small-left uk-margin-small-bottom">
                     {tag}
