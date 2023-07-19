@@ -206,6 +206,7 @@ const KEYWORDS: [string, string][] = Object.entries({
   "proxy": "proxy",
   "asyncfunction": "asyncfunctions",
   "async function": "asyncfunctions",
+  "symbol": "symbols",
 });
 const NORMALIZE: Record<string, string> = {
   "typedarray": "typedarrays",
