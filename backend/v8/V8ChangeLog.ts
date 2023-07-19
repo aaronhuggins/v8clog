@@ -7,7 +7,7 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
-import { filterTags, isAuthor, isRelevant } from "./filters.ts";
+import { isAuthor, subjectTags } from "./filters.ts";
 import { V8Tag } from "./V8Tag.ts";
 
 const MIN_MILESTONE = 7;
@@ -199,13 +199,17 @@ export class V8ChangeLog {
           },
         );
         for await (const result of results) {
-          if (isAuthor(result.author) && isRelevant(result.message)) {
-            changes.push(
-              new V8Change({
-                ...result,
-                milestone,
-              }),
-            );
+          if (isAuthor(result.author)) {
+            const [subject] = result.message.split("\n");
+            const tags = subjectTags(subject);
+            if (tags.length > 0) {
+              changes.push(
+                new V8Change({
+                  ...result,
+                  milestone,
+                }),
+              );
+            }
           }
         }
         changeMap.set(milestone, changes);
@@ -245,10 +249,10 @@ export class V8ChangeLog {
       release.changes = changes.get(release.milestone);
       release.features = features.get(release.milestone) ?? [];
       const tagSet = new Set<string>(
-        release.features!.map((feature) => feature.category),
+        release.features!.map((feature) => feature.category.toLowerCase()),
       );
       for (const change of release.changes ?? []) {
-        for (const tag of filterTags(change.subject)) {
+        for (const tag of subjectTags(change.subject)) {
           tagSet.add(tag);
         }
       }

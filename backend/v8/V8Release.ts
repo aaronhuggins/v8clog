@@ -4,7 +4,7 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
-import { filterTags, isAuthor, isRelevant } from "./filters.ts";
+import { isAuthor, subjectTags } from "./filters.ts";
 import { V8Tag } from "./V8Tag.ts";
 
 export type V8ReleaseMeta = {
@@ -69,32 +69,22 @@ export class V8Release {
   async getTags(noWrite?: boolean) {
     if (this.tags.length > 0) {
       return this.tags;
-    } else {
-      if (!this.features && !noWrite) {
-        await this.getFeatures();
-      }
-      if (!this.changes && !noWrite) {
-        await this.getChanges();
-      }
     }
-    const tagSet = new Set<string>(
-      this.features!.map((feature) => feature.category),
-    );
-    for (const change of this.changes ?? []) {
-      for (const tag of filterTags(change.subject)) {
-        tagSet.add(tag);
-      }
+    if (!this.features && !noWrite) {
+      await this.getFeatures();
     }
-    const tags = Array.from(tagSet);
+    if (!this.changes && !noWrite) {
+      await this.getChanges();
+    }
     if (!noWrite) {
-      await this.#tags.putAll(tags.map(async (name) => {
+      await this.#tags.putAll(this.tags.map(async (name) => {
         const tag = await this.#tags.getSafely(name);
         const v8tag = tag ? new V8Tag(tag) : new V8Tag(name);
         v8tag.add(this.milestone);
         return this.#tags.document(name, v8tag);
       }));
     }
-    return this.tags = tags;
+    return this.tags;
   }
 
   async getFeatures() {
@@ -115,8 +105,10 @@ export class V8Release {
         `browsers.chrome.desktop="${this.milestone}" category="${cat}"`
       ).join(" OR "),
     );
+    const tags = new Set<string>();
     const mapped = await Promise.all(
       results?.features?.map(async (feature) => {
+        tags.add(feature.category.toLowerCase());
         const v8feature = new V8Feature({
           ...(feature as unknown as V8Feature),
           milestone: feature.browsers.chrome.desktop,
@@ -126,6 +118,12 @@ export class V8Release {
         );
         return v8feature;
       }) ?? [],
+    );
+    this.tags = Array.from(
+      new Set([
+        ...this.tags,
+        ...tags,
+      ]),
     );
     if (mapped.length === 0) {
       await this.#features.put(
@@ -161,17 +159,27 @@ export class V8Release {
     );
     const promises: Promise<V8Change>[] = [];
     for await (const result of results) {
-      if (isAuthor(result.author) && isRelevant(result.message)) {
-        promises.push((async (): Promise<V8Change> => {
-          const v8change = new V8Change({
-            ...result,
-            milestone: this.milestone,
-          });
-          await this.#changes.put(
-            this.#changes.document(v8change.commit, v8change),
+      if (isAuthor(result.author)) {
+        const [subject] = result.message.split("\n");
+        const tags = subjectTags(subject);
+        if (tags.length > 0) {
+          this.tags = Array.from(
+            new Set([
+              ...this.tags,
+              ...tags,
+            ]),
           );
-          return v8change;
-        })());
+          promises.push((async (): Promise<V8Change> => {
+            const v8change = new V8Change({
+              ...result,
+              milestone: this.milestone,
+            });
+            await this.#changes.put(
+              this.#changes.document(v8change.commit, v8change),
+            );
+            return v8change;
+          })());
+        }
       }
     }
     const filtered = await Promise.all(promises);
