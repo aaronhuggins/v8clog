@@ -57,7 +57,12 @@ export class Router {
     if (result && result !== true) {
       const match = result.exec(url);
 
-      if (match) route.params = match.pathname.groups;
+      if (match) {
+        const entries = Object.entries(match.pathname.groups ?? {});
+        for (const [key, value] of entries) {
+          route.params[key] = value ? decodeURIComponent(value) : value;
+        }
+      }
     }
 
     if (url.searchParams.size > 0) {
@@ -119,7 +124,7 @@ export class Router {
               <Clog
                 origin={route.url.origin}
                 data={releases}
-                milestone={releases[0].milestone}
+                milestone={releases[0]?.milestone}
                 limit={releases.length}
                 v8clog={v8clog}
               />
