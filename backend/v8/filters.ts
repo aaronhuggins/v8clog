@@ -15,12 +15,11 @@ export function subjectTags(subject: string): string[] {
     const isStart = char === "[";
     const isEnd = char === "]";
     if (isEnd && tagStarted) {
-      const trimmed = tag.trim();
+      for (const subtag of subtagParser(tag)) {
+        tags.add(subtag);
+      }
       tagStarted = false;
       tag = "";
-      if (!EXCLUDE.TAGS.some((term) => term === trimmed)) {
-        tags.add(normalizeTag(trimmed));
-      }
     } else if (isStart && tagStarted) {
       tagStarted = false;
       tag = "";
@@ -52,7 +51,11 @@ export function hasV8File(diffs: DiffEntry[]): boolean {
     isV8File(diff.new_path) || isV8File(diff.old_path)
   );
 }
-
+const SEP = {
+  COL: ":",
+  COM: ",",
+  SLS: "/",
+} as const;
 const EXCLUDE = {
   AUTHOR: [
     "v8 autoroll",
@@ -125,6 +128,7 @@ const KEYWORDS: [string, string][] = Object.entries({
   "arraybuffer": "arraybuffer",
   "object": "object",
   "function": "function",
+  "compile hints": "compile hints",
 });
 const NORMALIZE: Record<string, string> = {
   "arraybuffers": "arraybuffer",
@@ -149,6 +153,24 @@ function isRelevant(lower: string): boolean {
 function normalizeTag(tag: string): string {
   return NORMALIZE[tag] ?? tag;
 }
+function subtagParser(tag: string): string[] {
+  const split = tag.includes(SEP.COM) ? tag.split(SEP.COM) : tag.split(SEP.SLS);
+  return split.map((subtag) => {
+    const trimmed = subtag.trim();
+    if (
+      // Ignore any prefixes in excludes array.
+      EXCLUDE.PREFIX.some((term) => trimmed === term) ||
+      // Exclude irrelevant tags.
+      EXCLUDE.TAGS.some((term) => trimmed === term)
+    ) {
+      return "";
+    }
+    if (trimmed.includes(SEP.COM) || trimmed.includes(SEP.SLS)) {
+      return subtagParser(trimmed);
+    }
+    return normalizeTag(trimmed);
+  }).filter((parsed) => parsed !== "").flat();
+}
 function prefixParser(lower: string): string[] {
   const sep = ":";
   const sepIndex = lower.indexOf(sep);
@@ -164,18 +186,7 @@ function prefixParser(lower: string): string[] {
     if (prefix.startsWith("[")) {
       return tags;
     }
-    const split = prefix.split(",");
-    for (const tag of split) {
-      // Ignore any prefixes in excludes array.
-      if (EXCLUDE.PREFIX.some((term) => tag === term)) {
-        continue;
-      }
-      // Exclude irrelevant tags.
-      if (EXCLUDE.TAGS.includes(prefix as typeof EXCLUDE["TAGS"][0])) {
-        continue;
-      }
-      tags.push(normalizeTag(tag));
-    }
+    tags.push(...subtagParser(prefix));
   }
   return tags;
 }
