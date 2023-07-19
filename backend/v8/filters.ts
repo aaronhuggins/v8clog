@@ -14,20 +14,19 @@ export function subjectTags(subject: string): string[] {
   for (const char of lower) {
     const isStart = char === "[";
     const isEnd = char === "]";
-    if (isStart && tagStarted) {
-      tagStarted = false;
-      tag = "";
-    } else if (isStart) {
-      tagStarted = true;
-    } else if (tagStarted) {
-      tag += char;
-    }
     if (isEnd && tagStarted) {
       tagStarted = false;
       const trimmed = tag.trim();
       if (!EXCLUDE.TAGS.includes(trimmed as typeof EXCLUDE["TAGS"][0])) {
         tags.add(normalizeTag(trimmed));
       }
+    } else if (isStart && tagStarted) {
+      tagStarted = false;
+      tag = "";
+    } else if (isStart) {
+      tagStarted = true;
+    } else if (tagStarted) {
+      tag += char;
     }
   }
   for (const [keyword, tag] of KEYWORDS) {
