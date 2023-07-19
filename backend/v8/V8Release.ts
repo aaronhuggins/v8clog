@@ -124,7 +124,7 @@ export class V8Release {
         ...this.tags,
         ...tags,
       ]),
-    );
+    ).sort();
     if (mapped.length === 0) {
       await this.#features.put(
         this.#features.document(
@@ -168,7 +168,7 @@ export class V8Release {
               ...this.tags,
               ...tags,
             ]),
-          );
+          ).sort();
           promises.push((async (): Promise<V8Change> => {
             const v8change = new V8Change({
               ...result,
