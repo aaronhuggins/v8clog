@@ -97,6 +97,7 @@ const EXCLUDE = {
     "devtools",
     "dev tools",
     "dev-tools",
+    "tracing w",
   ] as const,
   PREFIX: [
     "bump",
