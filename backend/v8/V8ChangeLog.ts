@@ -7,7 +7,7 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
-import { isAuthor, subjectTags } from "./filters.ts";
+import { isValidChange, subjectTags } from "./filters.ts";
 import { V8Tag } from "./V8Tag.ts";
 
 const MIN_MILESTONE = 7;
@@ -210,17 +210,13 @@ export class V8ChangeLog {
           },
         );
         for await (const result of results) {
-          if (isAuthor(result.author)) {
-            const [subject] = result.message.split("\n");
-            const tags = subjectTags(subject);
-            if (tags.length > 0) {
-              changes.push(
-                new V8Change({
-                  ...result,
-                  milestone,
-                }),
-              );
-            }
+          if (isValidChange(result)) {
+            changes.push(
+              new V8Change({
+                ...result,
+                milestone,
+              }),
+            );
           }
         }
         changeMap.set(milestone, changes);

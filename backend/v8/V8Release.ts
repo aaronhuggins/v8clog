@@ -4,7 +4,7 @@ import { V8Feature } from "./V8Feature.ts";
 import { V8Change } from "./V8Change.ts";
 import { V8 } from "../constants.ts";
 import { Gitiles } from "../deps.ts";
-import { isAuthor, subjectTags } from "./filters.ts";
+import { isValidChange, subjectTags } from "./filters.ts";
 import { V8Tag } from "./V8Tag.ts";
 
 export type V8ReleaseMeta = {
@@ -159,27 +159,25 @@ export class V8Release {
     );
     const promises: Promise<V8Change>[] = [];
     for await (const result of results) {
-      if (isAuthor(result.author)) {
+      if (isValidChange(result)) {
         const [subject] = result.message.split("\n");
         const tags = subjectTags(subject);
-        if (tags.length > 0) {
-          this.tags = Array.from(
-            new Set([
-              ...this.tags,
-              ...tags,
-            ]),
-          ).sort();
-          promises.push((async (): Promise<V8Change> => {
-            const v8change = new V8Change({
-              ...result,
-              milestone: this.milestone,
-            });
-            await this.#changes.put(
-              this.#changes.document(v8change.commit, v8change),
-            );
-            return v8change;
-          })());
-        }
+        this.tags = Array.from(
+          new Set([
+            ...this.tags,
+            ...tags,
+          ]),
+        ).sort();
+        promises.push((async (): Promise<V8Change> => {
+          const v8change = new V8Change({
+            ...result,
+            milestone: this.milestone,
+          });
+          await this.#changes.put(
+            this.#changes.document(v8change.commit, v8change),
+          );
+          return v8change;
+        })());
       }
     }
     const filtered = await Promise.all(promises);

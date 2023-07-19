@@ -1,7 +1,7 @@
 import { DiffEntry, Entity } from "../deps.ts";
 
 export function subjectTags(subject: string): string[] {
-  const tags = new Set<string>();
+  const tags = new Set<string>(["v8"]);
   const lower = subject.toLowerCase().trim();
   if (!isRelevant(lower)) {
     return [];
@@ -37,6 +37,24 @@ export function subjectTags(subject: string): string[] {
   return Array.from(tags);
 }
 
+export function isValidChange(
+  change: { author: Entity; message: string },
+): boolean {
+  const [subject] = change.message.split("\n");
+  return isAuthor(change.author) && isRelevant(subject.trim());
+}
+
+export function isRelevant(lower: string): boolean {
+  if (
+    EXCLUDE.START.some((term) => lower.startsWith(term)) ||
+    EXCLUDE.CONTAINS.some((term) => lower.includes(term)) ||
+    EXCLUDE.PREFIX.some((term) => lower.includes(term))
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export function isAuthor(author: Entity): boolean {
   for (const term of EXCLUDE.AUTHOR) {
     if (author.name.includes(term) || author.email.includes(term)) {
@@ -51,6 +69,7 @@ export function hasV8File(diffs: DiffEntry[]): boolean {
     isV8File(diff.new_path) || isV8File(diff.old_path)
   );
 }
+
 const SEP = {
   BR1: "[",
   BR2: "]",
@@ -78,13 +97,18 @@ const EXCLUDE = {
     "bump ",
     "revert ",
     "reland ",
+    "reland^",
     "re-land ",
+    "(reland)",
     "rollback ",
     "version ",
   ] as const,
   CONTAINS: [
-    "cppgc",
+    "c++",
+    "cpp",
     "cpgpc",
+    "owners",
+    "doc",
   ] as const,
   TAGS: [
     "owners",
@@ -97,7 +121,16 @@ const EXCLUDE = {
     "devtools",
     "dev tools",
     "dev-tools",
+    "docs",
     "tracing w",
+    "include",
+    "iwyu",
+    "tools",
+    "functionentryhook",
+    "promisehook",
+  ] as const,
+  TAG_CONTAINS: [
+    "step",
   ] as const,
   PREFIX: [
     "bump",
@@ -108,6 +141,7 @@ const EXCLUDE = {
     "revision",
     "rollback",
     "squashed",
+    "rename",
   ] as const,
 } as const;
 const KEYWORDS: [string, string][] = Object.entries({
@@ -116,6 +150,7 @@ const KEYWORDS: [string, string][] = Object.entries({
   "wsm": "webassembly",
   "masm": "webassembly",
   "webassembly": "webassembly",
+  "javascript": "javascript",
   "heap": "heap",
   "oom": "heap",
   "oilpan": "oilpan",
@@ -126,16 +161,54 @@ const KEYWORDS: [string, string][] = Object.entries({
   "osx": "osx",
   "os x": "osx",
   "windows": "windows",
-  "win": "windows",
   "linux": "linux",
+  "posix": "posix",
   "runtime": "runtime",
   "sandbox": "sandbox",
   "arraybuffer": "arraybuffers",
+  "array buffer": "arraybuffers",
   "object": "objects",
   "function": "functions",
   "compile hints": "compile hints",
+  "arm64": "arm64",
+  "ppc": "ppc",
+  "x64": "x64",
+  "inspector": "inspector",
+  "async iterator": "asynciterator",
+  "asynciterator": "asynciterator",
+  "iterator": "iterator",
+  "stringbuffer": "strings",
+  "promise": "promises",
+  "atomics": "atomics",
+  "array.": "arrays",
+  "array ": "arrays",
+  "isolate": "isolate-data",
+  "microtask": "microtasks",
+  "properyname": "objects",
+  "date": "date",
+  "strings": "strings",
+  "builtin": "builtins",
+  "built-in": "builtins",
+  "sharedarraybuffer": "sharedarraybuffers",
+  "json": "json",
+  "typedarray": "typedarrays",
+  "tracing": "tracing",
+  "module": "modules",
+  "android": "android",
+  "arrayprototype": "arrays",
+  "asmjs": "asmjs",
+  "asm.js": "asmjs",
+  "proxy": "proxy",
+  "asyncfunction": "asyncfunctions",
+  "async function": "asyncfunctions",
 });
 const NORMALIZE: Record<string, string> = {
+  "typedarray": "typedarrays",
+  "atomic": "atomics",
+  "microtask": "microtasks",
+  "array": "arrays",
+  "module": "modules",
+  "promise": "promises",
   "isolate": "isolate-data",
   "arraybuffer": "arraybuffers",
   "object": "objects",
@@ -143,26 +216,38 @@ const NORMALIZE: Record<string, string> = {
   "symbol": "symbols",
   "number": "numbers",
   "bigint": "bigints",
+  "string": "strings",
   "inspector protocol": "inspector",
   "masm": "wasm",
   "wsam": "wasm",
   "wsm": "wasm",
+  "logging": "log",
+  "cpu-profiler": "profiler",
+  "cpu profiler": "profiler",
+  "heap-profiler": "profiler",
+  "heap profiler": "profiler",
+  "embedder-tracing": "tracing",
+  "embedder tracing": "tracing",
+  "jobs-api": "jobs",
+  "jobs api": "jobs",
+  "heap-snapshot": "heap",
+  "ro-heap": "heap",
+  "wasm-debug-eval": "wasm",
+  "wasm-simd": "wasm",
+  "stack-trace": "stack",
+  "global-handles": "handles",
+  "global-handle": "handles",
+  "handle": "handles",
+  "parsing": "parser",
+  "libplatform": "platform",
+  "v8 platform": "platform",
+  "builtin": "builtins",
+  "sharedarraybuffer": "sharedarraybuffers",
+  "async-iteration": "asynciterator",
+  "valueserializer": "serializer",
 };
 function isV8File(name: string): boolean {
   return name.startsWith("include/v8") && name.endsWith(".h");
-}
-function isRelevant(lower: string): boolean {
-  for (const term of EXCLUDE.START) {
-    if (lower.startsWith(term)) {
-      return false;
-    }
-  }
-  for (const term of EXCLUDE.CONTAINS) {
-    if (lower.includes(term)) {
-      return false;
-    }
-  }
-  return true;
 }
 function normalizeTag(tag: string): string {
   return NORMALIZE[tag] ?? tag;
@@ -172,10 +257,9 @@ function subtagParser(tag: string): string[] {
   return split.map((subtag) => {
     const trimmed = subtag.trim();
     if (
-      // Ignore any prefixes in excludes array.
-      EXCLUDE.PREFIX.some((term) => trimmed === term) ||
       // Exclude irrelevant tags.
-      EXCLUDE.TAGS.some((term) => trimmed === term)
+      EXCLUDE.TAGS.some((term) => trimmed === term) ||
+      EXCLUDE.TAG_CONTAINS.some((term) => trimmed.includes(term))
     ) {
       return "";
     }
