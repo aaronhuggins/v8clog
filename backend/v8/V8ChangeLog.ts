@@ -267,7 +267,7 @@ export class V8ChangeLog {
           tagSet.add(tag);
         }
       }
-      release.tags = Array.from(tagSet);
+      release.tags = Array.from(tagSet).sort();
       for (const name of release.tags) {
         const tag = tagsMap.get(name);
         const v8tag = tag ? new V8Tag(tag) : new V8Tag(name);
