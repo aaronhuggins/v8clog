@@ -41,7 +41,7 @@ export function isValidChange(
   change: { author: Entity; message: string },
 ): boolean {
   const [subject] = change.message.split("\n");
-  return isAuthor(change.author) && isRelevant(subject.trim());
+  return isAuthor(change.author) && isRelevant(subject.trim().toLowerCase());
 }
 
 export function isRelevant(lower: string): boolean {
@@ -56,13 +56,13 @@ export function isRelevant(lower: string): boolean {
 }
 
 export function isAuthor(author: Entity): boolean {
-  for (const term of EXCLUDE.AUTHOR) {
-    if (
+  if (
+    EXCLUDE.AUTHOR.some((term) =>
       author.name.toLowerCase().includes(term) ||
       author.email.toLowerCase().includes(term)
-    ) {
-      return false;
-    }
+    )
+  ) {
+    return false;
   }
   return true;
 }
