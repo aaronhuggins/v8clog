@@ -112,6 +112,9 @@ const EXCLUDE = {
 } as const;
 const KEYWORDS: [string, string][] = Object.entries({
   "wasm": "webassembly",
+  "wsam": "webassembly",
+  "wsm": "webassembly",
+  "masm": "webassembly",
   "webassembly": "webassembly",
   "heap": "heap",
   "oom": "heap",
@@ -135,6 +138,9 @@ const KEYWORDS: [string, string][] = Object.entries({
 const NORMALIZE: Record<string, string> = {
   "arraybuffers": "arraybuffer",
   "inspector protocol": "inspector",
+  "masm": "wasm",
+  "wsam": "wasm",
+  "wsm": "wasm",
 };
 function isV8File(name: string): boolean {
   return name.startsWith("include/v8") && name.endsWith(".h");
