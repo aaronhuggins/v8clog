@@ -159,9 +159,12 @@ export class V8Release {
     );
     const promises: Promise<V8Change>[] = [];
     for await (const result of results) {
-      if (isValidChange(result)) {
-        const [subject] = result.message.split("\n");
-        const tags = subjectTags(subject);
+      const v8change = new V8Change({
+        ...result,
+        milestone: this.milestone,
+      });
+      if (isValidChange(v8change)) {
+        const tags = subjectTags(v8change.subject);
         this.tags = Array.from(
           new Set([
             ...this.tags,
@@ -169,10 +172,6 @@ export class V8Release {
           ]),
         ).sort();
         promises.push((async (): Promise<V8Change> => {
-          const v8change = new V8Change({
-            ...result,
-            milestone: this.milestone,
-          });
           await this.#changes.put(
             this.#changes.document(v8change.commit, v8change),
           );

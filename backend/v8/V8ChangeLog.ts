@@ -210,13 +210,12 @@ export class V8ChangeLog {
           },
         );
         for await (const result of results) {
-          if (isValidChange(result)) {
-            changes.push(
-              new V8Change({
-                ...result,
-                milestone,
-              }),
-            );
+          const v8Change = new V8Change({
+            ...result,
+            milestone,
+          });
+          if (isValidChange(v8Change)) {
+            changes.push(v8Change);
           }
         }
         changeMap.set(milestone, changes);

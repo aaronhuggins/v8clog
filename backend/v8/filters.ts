@@ -38,10 +38,9 @@ export function subjectTags(subject: string): string[] {
 }
 
 export function isValidChange(
-  change: { author: Entity; message: string },
+  change: { author: Entity; subject: string },
 ): boolean {
-  const [subject] = change.message.split("\n");
-  return isAuthor(change.author) && isRelevant(subject.trim().toLowerCase());
+  return isAuthor(change.author) && isRelevant(change.subject.toLowerCase());
 }
 
 export function isRelevant(lower: string): boolean {
