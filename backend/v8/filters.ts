@@ -15,9 +15,10 @@ export function subjectTags(subject: string): string[] {
     const isStart = char === "[";
     const isEnd = char === "]";
     if (isEnd && tagStarted) {
-      tagStarted = false;
       const trimmed = tag.trim();
-      if (!EXCLUDE.TAGS.includes(trimmed as typeof EXCLUDE["TAGS"][0])) {
+      tagStarted = false;
+      tag = "";
+      if (!EXCLUDE.TAGS.some((term) => term === trimmed)) {
         tags.add(normalizeTag(trimmed));
       }
     } else if (isStart && tagStarted) {
@@ -127,6 +128,7 @@ const KEYWORDS: [string, string][] = Object.entries({
 });
 const NORMALIZE: Record<string, string> = {
   "arraybuffers": "arraybuffer",
+  "inspector protocol": "inspector",
 };
 function isV8File(name: string): boolean {
   return name.startsWith("include/v8") && name.endsWith(".h");
@@ -151,9 +153,10 @@ function prefixParser(lower: string): string[] {
   const sep = ":";
   const sepIndex = lower.indexOf(sep);
   const tags: string[] = [];
-  if (sepIndex > 0) {
-    // Colon-pair is a source code name, not a tag.
-    if (lower[sepIndex + 1] === sep) {
+  if (sepIndex > 0 && sepIndex !== lower.length - 1) {
+    // Colon-pair or uri is a source code name, not a tag.
+    const nextChar = lower[sepIndex + 1];
+    if (nextChar === sep || nextChar === "/") {
       return tags;
     }
     const prefix = lower.substring(0, sepIndex).trim();
@@ -164,10 +167,8 @@ function prefixParser(lower: string): string[] {
     const split = prefix.split(",");
     for (const tag of split) {
       // Ignore any prefixes in excludes array.
-      for (const term of EXCLUDE.PREFIX) {
-        if (prefix === term) {
-          continue;
-        }
+      if (EXCLUDE.PREFIX.some((term) => tag === term)) {
+        continue;
       }
       // Exclude irrelevant tags.
       if (EXCLUDE.TAGS.includes(prefix as typeof EXCLUDE["TAGS"][0])) {
