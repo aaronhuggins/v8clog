@@ -34,7 +34,9 @@ export function Release(
               <p class={style ? "uk-text-meta uk-margin-remove-top" : ""}>
                 Tags:
                 {release.tags.map((tag) => (
-                  <span class="uk-label uk-margin-small-left">{tag}</span>
+                  <span class="uk-label uk-margin-small-left uk-margin-small-bottom">
+                    {tag}
+                  </span>
                 ))}
               </p>
             )
