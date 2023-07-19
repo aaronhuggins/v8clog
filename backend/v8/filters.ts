@@ -93,7 +93,6 @@ const EXCLUDE = {
     "cleanup",
     "task",
     "build",
-    "builtins",
     "bump",
     "devtools",
     "dev tools",
