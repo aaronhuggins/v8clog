@@ -56,6 +56,7 @@ export class V8ChangeLog {
 
   async getLatest(): Promise<V8Release> {
     const { stable } = await this.#chromestatus.channels();
+    this.latest = stable.mstone;
     const release = new V8Release({
       chromestatus: this.#chromestatus,
       database: this.#database,
@@ -104,6 +105,14 @@ export class V8ChangeLog {
       );
     }
     return [];
+  }
+
+  async getTags(): Promise<V8Tag[]> {
+    const tags: V8Tag[] = [];
+    for await (const tag of this.#tags.getAll()) {
+      tags.push(new V8Tag(tag));
+    }
+    return tags;
   }
 
   async getRange(start: number, end?: number): Promise<V8Release[]> {
