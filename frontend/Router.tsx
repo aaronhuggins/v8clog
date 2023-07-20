@@ -23,6 +23,7 @@ import { V8ChangeLog } from "../backend/v8/V8ChangeLog.ts";
 import { V8Release } from "../backend/v8/V8Release.ts";
 import { Release } from "./components/Release.tsx";
 import { BACKEND_TYPE } from "../backend/constants.ts";
+import { Sitemap } from "./components/Sitemap.tsx";
 
 const renderXML = createXMLRenderer(renderSSR);
 
@@ -33,6 +34,7 @@ export class Router {
     ["/clog", new URLPattern({ pathname: "/clog/:version" })],
     ["/tag", new URLPattern({ pathname: "/tag/:tagname{/:feed}?" })],
     ["/rss.xml", true],
+    ["/sitemap.xml", true],
     ["/static", true],
     ["/about", true],
     ["/robots.txt", true],
@@ -120,7 +122,7 @@ export class Router {
             await release.getChanges();
           }));
           if (route.params.feed === "rss.xml") {
-            return this.#renderRSS(
+            return this.#renderRss(
               <RSS origin={route.url.origin} releases={releases} />,
             );
           }
@@ -207,8 +209,19 @@ export class Router {
             v8clog.earliest,
             v8clog.latest,
           );
-          return this.#renderRSS(
+          return this.#renderRss(
             <RSS origin={route.url.origin} releases={releases} />,
+          );
+        }
+        case "/sitemap.xml": {
+          await v8clog.getLatest();
+          const tags = await v8clog.getTags();
+          return this.#renderXml(
+            <Sitemap
+              latest={v8clog.latest}
+              origin={route.url.origin}
+              tags={tags.map((tag) => tag.name)}
+            />,
           );
         }
         case "/static": {
@@ -247,13 +260,21 @@ export class Router {
     });
   }
 
-  #renderRSS(input: any) {
+  #renderRss(input: any) {
+    return this.#renderXml(input, "application/rss+xml");
+  }
+
+  #renderXml(
+    input: any,
+    contentType = "application/xml",
+    cache = "no-cache, no-store",
+  ) {
     const xmlDirective = '<?xml version="1.0" encoding="utf-8"?>';
-    const rss = xmlDirective + renderXML(input);
-    return new Response(rss, {
+    const xml = xmlDirective + renderXML(input);
+    return new Response(xml, {
       headers: {
-        "Content-Type": "application/rss+xml",
-        "Cache-Control": "no-cache, no-store",
+        "Content-Type": contentType,
+        "Cache-Control": cache,
       },
     });
   }
@@ -265,6 +286,7 @@ type RouteName =
   | "/static"
   | "/tag"
   | "/rss.xml"
+  | "/sitemap.xml"
   | "/about"
   | "/robots.txt";
 
