@@ -4,7 +4,7 @@ export {
   Helmet,
   renderSSR,
   Suspense,
-} from "https://deno.land/x/nano_jsx@v0.0.32/mod.ts";
+} from "https://deno.land/x/nano_jsx@v0.0.37/mod.ts";
 export {
   createXMLHandler,
   createXMLRenderer,
