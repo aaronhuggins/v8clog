@@ -6,34 +6,9 @@ export function subjectTags(subject: string): string[] {
   if (!isRelevant(lower)) {
     return [];
   }
-  for (const tag of prefixParser(lower)) {
-    tags.add(tag);
-  }
-  let tag = "";
-  let tagStarted = false;
-  for (const char of lower) {
-    const isStart = char === SEP.BR1;
-    const isEnd = char === SEP.BR2;
-    if (isEnd && tagStarted) {
-      for (const subtag of subtagParser(tag)) {
-        tags.add(subtag);
-      }
-      tagStarted = false;
-      tag = "";
-    } else if (isStart && tagStarted) {
-      tagStarted = false;
-      tag = "";
-    } else if (isStart) {
-      tagStarted = true;
-    } else if (tagStarted) {
-      tag += char;
-    }
-  }
-  for (const [keyword, tag] of KEYWORDS) {
-    if (lower.includes(keyword)) {
-      tags.add(tag);
-    }
-  }
+  prefixParser(lower, tags);
+  tagParser(lower, tags);
+  keywordSelector(lower, tags);
   return Array.from(tags);
 }
 
@@ -44,26 +19,17 @@ export function isValidChange(
 }
 
 export function isRelevant(lower: string): boolean {
-  if (
-    EXCLUDE.START.some((term) => lower.startsWith(term)) ||
-    EXCLUDE.CONTAINS.some((term) => lower.includes(term)) ||
-    EXCLUDE.PREFIX.some((term) => lower.includes(term))
-  ) {
-    return false;
-  }
-  return true;
+  return !EXCLUDE.START.some((term) => lower.startsWith(term)) &&
+    !EXCLUDE.CONTAINS.some((term) => lower.includes(term)) &&
+    !EXCLUDE.PREFIX.some((term) => lower.includes(term));
 }
 
 export function isAuthor(author: Entity): boolean {
-  if (
-    EXCLUDE.AUTHOR.some((term) =>
-      author.name.toLowerCase().includes(term) ||
-      author.email.toLowerCase().includes(term)
-    )
-  ) {
-    return false;
-  }
-  return true;
+  const nameLower = author.name.toLowerCase();
+  const emailLower = author.email.toLowerCase();
+  return !EXCLUDE.AUTHOR.some((term) =>
+    nameLower.includes(term) || emailLower.includes(term)
+  );
 }
 
 export function hasV8File(diffs: DiffEntry[]): boolean {
@@ -253,44 +219,80 @@ const NORMALIZE: Record<string, string> = {
   "async-iteration": "asynciterator",
   "valueserializer": "serializer",
 };
-function isV8File(name: string): boolean {
-  return name.startsWith("include/v8") && name.endsWith(".h");
+function tagParser(lower: string, tags: Set<string>): void {
+  let tag = "";
+  let tagStarted = false;
+  const { length } = lower;
+  for (let i = 0; i < length; i++) {
+    const char = lower.charAt(i);
+    const isStart = char === SEP.BR1;
+    const isEnd = char === SEP.BR2;
+    if (isEnd && tagStarted) {
+      subtagParser(tag, tags);
+      tagStarted = false;
+      tag = "";
+    } else if (isStart && tagStarted) {
+      tagStarted = false;
+      tag = "";
+    } else if (isStart) {
+      tagStarted = true;
+    } else if (tagStarted) {
+      tag += char;
+    }
+  }
+}
+function subtagParser(tag: string, tags: Set<string>): void {
+  const { length } = tag;
+  let subtag = "";
+  for (let i = 0; i < length; i++) {
+    const char = tag.charAt(i);
+    if (char === SEP.COM || char === SEP.SLS) {
+      const trimmed = subtag.trim();
+      if (!excludeTag(trimmed)) {
+        tags.add(normalizeTag(trimmed));
+      }
+      subtag = "";
+      continue;
+    }
+    subtag += char;
+  }
+  subtag = subtag.trim();
+  if (!excludeTag(subtag)) {
+    tags.add(normalizeTag(subtag));
+  }
+}
+function prefixParser(lower: string, tags: Set<string>): void {
+  // Tag-formatted prefix will be picked up by tag parser.
+  if (lower.startsWith(SEP.BR1)) {
+    return;
+  }
+  const sepIndex = lower.indexOf(SEP.COL);
+  if (sepIndex > 0 && sepIndex !== lower.length - 1) {
+    // Colon-pair or uri is a source code name, not a tag.
+    const nextChar = lower.charAt(sepIndex + 1);
+    if (nextChar === SEP.COL || nextChar === SEP.SLS) {
+      return;
+    }
+    subtagParser(lower.substring(0, sepIndex), tags);
+  }
+  return;
+}
+function keywordSelector(lower: string, tags: Set<string>): void {
+  for (const [keyword, tag] of KEYWORDS) {
+    if (!tags.has(tag) && lower.includes(keyword)) {
+      tags.add(tag);
+    }
+  }
 }
 function normalizeTag(tag: string): string {
   return NORMALIZE[tag] ?? tag;
 }
-function subtagParser(tag: string): string[] {
-  const split = tag.includes(SEP.COM) ? tag.split(SEP.COM) : tag.split(SEP.SLS);
-  return split.map((subtag) => {
-    const trimmed = subtag.trim();
-    if (
-      // Exclude irrelevant tags.
-      EXCLUDE.TAGS.some((term) => trimmed === term) ||
-      EXCLUDE.TAG_CONTAINS.some((term) => trimmed.includes(term))
-    ) {
-      return "";
-    }
-    if (trimmed.includes(SEP.COM) || trimmed.includes(SEP.SLS)) {
-      return subtagParser(trimmed);
-    }
-    return normalizeTag(trimmed);
-  }).filter((parsed) => parsed !== "").flat();
+function excludeTag(tag: string): boolean {
+  return tag == "" ||
+    // Exclude irrelevant tags.
+    EXCLUDE.TAGS.some((term) => tag === term) ||
+    EXCLUDE.TAG_CONTAINS.some((term) => tag.includes(term));
 }
-function prefixParser(lower: string): string[] {
-  const sepIndex = lower.indexOf(SEP.COL);
-  const tags: string[] = [];
-  if (sepIndex > 0 && sepIndex !== lower.length - 1) {
-    // Colon-pair or uri is a source code name, not a tag.
-    const nextChar = lower[sepIndex + 1];
-    if (nextChar === SEP.COL || nextChar === SEP.SLS) {
-      return tags;
-    }
-    const prefix = lower.substring(0, sepIndex).trim();
-    // Tag-formatted prefix will be picked up by tag parser.
-    if (prefix.startsWith(SEP.BR1)) {
-      return tags;
-    }
-    tags.push(...subtagParser(prefix));
-  }
-  return tags;
+function isV8File(name: string): boolean {
+  return name.startsWith("include/v8") && name.endsWith(".h");
 }
