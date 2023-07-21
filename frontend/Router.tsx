@@ -161,12 +161,7 @@ export class Router {
           } else {
             const limit = +(route.params.limit ?? "20");
             let releases: V8Release[] = [];
-            if (route.params.start) {
-              releases = await v8clog.getRange(
-                +(route.params.start ?? "0"),
-                +(route.params.end ?? "0"),
-              );
-            } else if (route.params.milestone) {
+            if (route.params.milestone) {
               const milestone = +(route.params.milestone ?? "0");
               releases = await v8clog.getRange(
                 milestone - limit,
