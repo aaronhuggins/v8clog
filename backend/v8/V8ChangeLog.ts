@@ -10,8 +10,6 @@ import { Gitiles } from "../deps.ts";
 import { isValidChange, subjectTags } from "./filters.ts";
 import { V8Tag } from "./V8Tag.ts";
 
-const MIN_MILESTONE = 7;
-
 export class V8ChangeLog {
   #gitiles: Gitiles;
   #chromestatus: ChromestatusAPI;
@@ -19,7 +17,7 @@ export class V8ChangeLog {
   #releases: Collection<V8ReleaseMeta>;
   #tags: Collection<V8Tag>;
   latest = 114;
-  earliest = MIN_MILESTONE;
+  earliest = 1;
   constructor(backend: "json" | "deno_kv") {
     this.#chromestatus = new ChromestatusAPI();
     this.#database = new JSONDB(
@@ -74,18 +72,22 @@ export class V8ChangeLog {
     stable_date?: string,
   ): Promise<V8Release> {
     const milestone = typeof mstoneOrVersion === "number"
-      ? Math.max(mstoneOrVersion, MIN_MILESTONE)
-      : Math.max(V8Release.getMilestone(mstoneOrVersion), MIN_MILESTONE);
+      ? Math.max(mstoneOrVersion, 1)
+      : Math.max(V8Release.getMilestone(mstoneOrVersion), 1);
     const meta = await this.#releases.getSafely(milestone.toString());
     if (meta) {
       return this.#metaRelease(meta);
     }
-    if (!stable_date) {
+    if (stable_date === null) {
+      stable_date = new Date(stable_date as unknown as string).toISOString();
+    }
+    if (stable_date === undefined) {
       const result = await this.#chromestatus.channels({
         start: milestone,
         end: milestone,
       });
-      stable_date = result[milestone].stable_date;
+      stable_date = new Date(result[milestone]?.stable_date ?? null)
+        .toISOString();
     }
     return new V8Release({
       chromestatus: this.#chromestatus,
@@ -126,11 +128,11 @@ export class V8ChangeLog {
         start = newStart;
       }
     }
-    start = Math.max(start, MIN_MILESTONE);
-    end = Math.max(end, MIN_MILESTONE);
+    start = Math.max(start, 1);
+    end = Math.max(end, 1);
     const length = end - start === 0
       ? 1
-      : start === MIN_MILESTONE
+      : start === 1
       ? end - start + 1
       : end - start;
     const metas = await this.#releases.query((doc) =>
@@ -142,7 +144,7 @@ export class V8ChangeLog {
     const result = await this.#chromestatus.channels({ start, end });
     return await Promise.all(Array.from({ length }, () => {
       const milestone = end!--;
-      return this.getRelease(milestone, result[milestone].stable_date);
+      return this.getRelease(milestone, result[milestone]?.stable_date);
     }));
   }
 
