@@ -10,13 +10,14 @@ import { V8Release } from "../../backend/v8/V8Release.ts";
 import { V8ChangeLog } from "../../backend/v8/V8ChangeLog.ts";
 
 export function Clog(
-  { origin, releases, tag, milestone, limit, v8clog }: {
+  { canonicalPath, origin, releases, tag, milestone, limit, v8clog }: {
     origin: string;
     releases: V8Release[];
     tag?: string;
     milestone?: number;
     limit: number;
     v8clog: V8ChangeLog;
+    canonicalPath: string;
   },
 ) {
   const name = tag
@@ -54,7 +55,7 @@ export function Clog(
 
   return (
     <div class="uk-container">
-      <Meta origin={origin} name={name} path="/clog" />
+      <Meta origin={origin} name={name} path={canonicalPath} />
       <div class="uk-card uk-card-body uk-card-default uk-background-secondary uk-light">
         <h3>
           {name} {tag ? <a href={`/tag/${tag}/rss.xml`} uk-icon="rss" /> : null}

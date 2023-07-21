@@ -131,9 +131,16 @@ export class Router {
           }));
           if (route.params.feed === "rss.xml") {
             return this.#renderRss(
-              <RSS origin={route.url.origin} releases={releases} />,
+              <RSS
+                origin={route.url.origin}
+                releases={releases}
+                tag={route.params.tagname}
+              />,
             );
           }
+          const canonicalPath = `/tag/${
+            encodeURIComponent(route.params.tagname)
+          }`;
           return this.#renderHTML(
             <App active="clog">
               <Clog
@@ -142,6 +149,7 @@ export class Router {
                 tag={route.params.tagname}
                 limit={releases.length}
                 v8clog={v8clog}
+                canonicalPath={canonicalPath}
               />
             </App>,
           );
@@ -168,9 +176,12 @@ export class Router {
             }
           } else {
             const limit = +(route.params.limit ?? "20");
+            let canonicalPath = "/clog";
             let releases: V8Release[] = [];
             if (route.params.milestone) {
               const milestone = +(route.params.milestone ?? "0");
+              canonicalPath =
+                `${canonicalPath}?milestone=${milestone}&limit=${limit}`;
               releases = await v8clog.getRange(
                 milestone - limit,
                 milestone,
@@ -193,6 +204,7 @@ export class Router {
                   milestone={releases[0]?.milestone}
                   limit={limit}
                   v8clog={v8clog}
+                  canonicalPath={canonicalPath}
                 />
               </App>,
             );
