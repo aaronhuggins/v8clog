@@ -273,6 +273,9 @@ export class V8ChangeLog {
           tagSet.add(tag);
         }
       }
+      if (release.stable_date.startsWith("1970")) {
+        tagSet.add("unreleased");
+      }
       release.tags = Array.from(tagSet).sort();
       for (const name of release.tags) {
         const tag = tagsMap.get(name);

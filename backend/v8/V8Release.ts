@@ -119,6 +119,9 @@ export class V8Release {
         return v8feature;
       }) ?? [],
     );
+    if (this.stable_date.startsWith("1970")) {
+      tags.add("unreleased");
+    }
     this.tags = Array.from(
       new Set([
         ...this.tags,
