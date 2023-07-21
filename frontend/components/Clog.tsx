@@ -25,7 +25,7 @@ export function Clog(
   const pager = () => {
     if (tag) return null;
     const prev = Math.min((milestone ?? 0) + limit, v8clog.latest);
-    const next = Math.max((milestone ?? 0) - limit, v8clog.earliest);
+    const next = Math.max((milestone ?? 0) - limit, 1);
     const path = (milestone: number) =>
       `/clog?milestone=${milestone}&limit=${limit}`;
     return (
@@ -40,7 +40,7 @@ export function Clog(
             <a href={path(milestone ?? 0)} uk-icon="table"></a>
           </li>
           <li>
-            {releases[releases.length - 1]?.milestone !== v8clog.earliest
+            {releases[releases.length - 1]?.milestone !== 1
               ? <a href={path(next)} uk-icon="chevron-right"></a>
               : (
                 <span class="uk-icon pager-span" uk-icon="chevron-right">
