@@ -24,15 +24,22 @@ import { V8Release } from "../backend/v8/V8Release.ts";
 import { Release } from "./components/Release.tsx";
 import { BACKEND_TYPE } from "../backend/constants.ts";
 import { Sitemap } from "./components/Sitemap.tsx";
+import { URLPatternPlus } from "../backend/URLPatternPlus.ts";
 
 const renderXML = createXMLRenderer(renderSSR);
 
 export class Router {
   #staticCache = new Map<string, StaticFile>();
-  routes = new Map<RouteName, URLPattern | boolean>([
+  routes = new Map<RouteName, URLPatternPlus | boolean>([
     ["/", true],
-    ["/clog", new URLPattern({ pathname: "/clog/:version" })],
-    ["/tag", new URLPattern({ pathname: "/tag/:tagname{/:feed}?" })],
+    [
+      "/clog",
+      new URLPatternPlus({
+        pathname: "/clog/:version?",
+        search: "milestone=:milestone?&limit=:limit?",
+      }),
+    ],
+    ["/tag", new URLPatternPlus({ pathname: "/tag/:tagname{/:feed}?" })],
     ["/rss.xml", true],
     ["/sitemap.xml", true],
     ["/static", true],
@@ -64,14 +71,15 @@ export class Router {
         for (const [key, value] of entries) {
           route.params[key] = value ? decodeURIComponent(value) : value;
         }
+        const searchEntries = Object.entries(match.search.groups ?? {});
+        for (const [key, value] of searchEntries) {
+          route.params[key] = Array.isArray(value)
+            ? value.map((item) => decodeURIComponent(item))
+            : typeof value === "string"
+            ? decodeURIComponent(value)
+            : value;
+        }
       }
-    }
-
-    if (url.searchParams.size > 0) {
-      route.params = {
-        ...route.params,
-        ...Object.fromEntries(url.searchParams.entries()),
-      };
     }
 
     return route;

@@ -7,3 +7,4 @@ export type {
   DiffEntry,
   Entity,
 } from "https://codeberg.org/aaronhuggins/gitiles_client/raw/tag/0.3.0/mod.ts";
+export { parse as parsePathToRegExp } from "https://deno.land/x/path_to_regexp@v6.2.1/index.ts";

@@ -53,7 +53,6 @@ export class DenoKvCollection<D extends {}> extends Collection<D> {
     let id = 0;
     for (let i = 0; i < json.length; i += size, id++) {
       const slice = json.slice(i, i + size);
-      console.log("slice:", slice.length);
       await this.#kv!.set([`${this.name}::${doc._id}`, id], {
         _id: id.toString(),
         _docId: doc._id,
