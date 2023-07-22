@@ -33,6 +33,12 @@ export abstract class Collection<D extends {}> {
     };
   }
 
+  async import(collection: Collection<D>) {
+    for await (const doc of collection.getAll()) {
+      await this.put(doc);
+    }
+  }
+
   abstract open(): Promise<void>;
 
   abstract commit(): Promise<void>;
