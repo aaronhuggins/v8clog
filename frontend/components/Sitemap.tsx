@@ -20,11 +20,10 @@ export const Sitemap = xml(
       <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
         <SiteUrl>{`${origin}/`}</SiteUrl>
         <SiteUrl>{`${origin}/clog`}</SiteUrl>
-        {Array.from({ length: Math.ceil(latest / 20) - 1 }, (_, i) => {
-          const milestone = latest - (20 * (i + 1));
+        {Array.from({ length: Math.ceil(latest / 20) - 2 }, (_, i) => {
           return (
             <SiteUrl>
-              {`${origin}/clog?milestone=${milestone}&limit=20`}
+              {`${origin}/clog?page=${i + 2}&limit=20`}
             </SiteUrl>
           );
         })}
