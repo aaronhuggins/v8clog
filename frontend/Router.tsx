@@ -142,42 +142,6 @@ export class Router {
             </App>,
           );
         }
-        case "/tag": {
-          const measure = this.#createMeasure(request, "Database");
-          const releases = await this.#v8clog.getByTag(route.params.tagname);
-          await Promise.all(releases.map(async (release) => {
-            await release.getFeatures();
-            await release.getChanges();
-          }));
-          measure.finish();
-          this.#createMeasure(request, "Render");
-          if (route.params.feed === "rss.xml") {
-            return this.#renderRss(
-              request,
-              <RSS
-                origin={route.url.origin}
-                releases={releases}
-                tag={route.params.tagname}
-              />,
-            );
-          }
-          const canonicalPath = `/tag/${
-            encodeURIComponent(route.params.tagname)
-          }`;
-          return this.#renderHTML(
-            request,
-            <App active="clog">
-              <Clog
-                origin={route.url.origin}
-                releases={releases}
-                tag={route.params.tagname}
-                limit={releases.length}
-                v8clog={this.#v8clog}
-                canonicalPath={canonicalPath}
-              />
-            </App>,
-          );
-        }
         case "/clog": {
           if (route.params.version) {
             try {
@@ -293,6 +257,42 @@ export class Router {
             return file.response(this.#performance.get(request));
           }
           break;
+        }
+        case "/tag": {
+          const measure = this.#createMeasure(request, "Database");
+          const releases = await this.#v8clog.getByTag(route.params.tagname);
+          await Promise.all(releases.map(async (release) => {
+            await release.getFeatures();
+            await release.getChanges();
+          }));
+          measure.finish();
+          this.#createMeasure(request, "Render");
+          if (route.params.feed === "rss.xml") {
+            return this.#renderRss(
+              request,
+              <RSS
+                origin={route.url.origin}
+                releases={releases}
+                tag={route.params.tagname}
+              />,
+            );
+          }
+          const canonicalPath = `/tag/${
+            encodeURIComponent(route.params.tagname)
+          }`;
+          return this.#renderHTML(
+            request,
+            <App active="clog">
+              <Clog
+                origin={route.url.origin}
+                releases={releases}
+                tag={route.params.tagname}
+                limit={releases.length}
+                v8clog={this.#v8clog}
+                canonicalPath={canonicalPath}
+              />
+            </App>,
+          );
         }
       }
 
