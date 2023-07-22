@@ -32,10 +32,10 @@ export class URLPatternPlus {
         : new URLSearchParams(input.search);
       for (const param of pattern.searchParams) {
         if (
-          searchParams.has(param.name) &&
+          !searchParams.has(param.name) &&
           (param.modifier === MOD.REQUIRED || param.modifier === MOD.ONE_PLUS)
         ) {
-          return result && true;
+          return false;
         }
       }
     }
