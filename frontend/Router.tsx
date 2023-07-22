@@ -39,7 +39,7 @@ export class Router {
       "/clog",
       new URLPatternPlus({
         pathname: "/clog/:version?",
-        search: "milestone=:milestone?&limit=:limit?",
+        search: "page=:page?&limit=:limit?",
       }),
     ],
     ["/tag", new URLPatternPlus({ pathname: "/tag/:tagname{/:feed}?" })],
@@ -170,12 +170,19 @@ export class Router {
           } else {
             const measure = this.#createMeasure(request, "Database");
             const limit = +(route.params.limit ?? "20");
+            const pageCount = Math.ceil(this.#v8clog.latest / limit);
+            const page = Math.min(
+              Math.max(
+                Math.floor(Number.parseFloat(route.params.page ?? "1")),
+                1,
+              ),
+              pageCount,
+            );
             let canonicalPath = "/clog";
             let releases: V8Release[] = [];
-            if (route.params.milestone) {
-              const milestone = +(route.params.milestone ?? "0");
-              canonicalPath =
-                `${canonicalPath}?milestone=${milestone}&limit=${limit}`;
+            if (route.params.page) {
+              canonicalPath = `${canonicalPath}?page=${page}&limit=${limit}`;
+              const milestone = this.#v8clog.latest - (page * limit);
               releases = await this.#v8clog.getRange(
                 milestone - limit,
                 milestone,
@@ -198,7 +205,7 @@ export class Router {
                 <Clog
                   origin={route.url.origin}
                   releases={releases}
-                  milestone={releases[0]?.milestone}
+                  page={page}
                   limit={limit}
                   v8clog={this.#v8clog}
                   canonicalPath={canonicalPath}
