@@ -8,7 +8,9 @@ import {
 import { Router } from "./frontend/Router.tsx";
 
 const router = new Router();
-const cache = CACHE_TYPE ? await caches.open("app") : new WebApiCache();
+const cache = CACHE_TYPE === "deno_builtin"
+  ? await caches.open("app")
+  : new WebApiCache();
 
 if (MIGRATE_DATA) {
   const oldDb = new JSONDB({ prefix: "data/" }, JSONCollection);
