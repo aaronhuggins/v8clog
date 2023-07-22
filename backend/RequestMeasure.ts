@@ -1,4 +1,4 @@
-export class RequestPerformance {
+export class RequestMeasure {
   name: string;
   start: number;
   end: number;
@@ -12,6 +12,9 @@ export class RequestPerformance {
     this.start = performance.now();
     this.end = NaN;
     this.name = name;
+  }
+  finish() {
+    this.end = performance.now();
   }
   serverTime(): string {
     return `${this.name};dur=${this.duration}`;
