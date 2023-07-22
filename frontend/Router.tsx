@@ -32,6 +32,7 @@ export class Router {
   #performance = new WeakMap<Request, RequestMeasure[]>();
   #v8clog = new V8ChangeLog(BACKEND_TYPE);
   #staticCache = new Map<string, StaticFile>();
+  cache?: Cache;
   routes = new Map<RouteName, URLPatternPlus | boolean>([
     ["/", true],
     [
@@ -88,9 +89,18 @@ export class Router {
     return route;
   }
 
-  respond() {
+  respond(cache?: Cache) {
+    this.cache = cache;
     return async (request: Request) => {
-      this.#performance.set(request, [new RequestMeasure("CPU")]);
+      this.#createMeasure(request, "CPU", true);
+      const cacheMeasure = this.#createMeasure(request, "Cache");
+      const cached = await cache?.match(request);
+      cacheMeasure.finish();
+      if (cached) {
+        const response = cached.clone();
+        response.headers.set("Server-Timing", this.#serverTime(request));
+        return response;
+      }
       const route = this.#getRoute(request);
 
       switch (route.name) {
@@ -236,12 +246,14 @@ export class Router {
         }
         case "/robots.txt": {
           this.#createMeasure(request, "Render");
-          return new Response("", {
+          const response = new Response("", {
             headers: {
               "Content-Type": "text/plain",
               "Server-Timing": this.#serverTime(request),
             },
           });
+          await cache?.put(request, response);
+          return response.clone();
         }
         case "/rss.xml": {
           const measure = this.#createMeasure(request, "Database");
@@ -288,7 +300,7 @@ export class Router {
     };
   }
 
-  #renderHTML(request: Request, input: any) {
+  async #renderHTML(request: Request, input: any) {
     const app = renderSSR(input);
     const { body, head, footer, attributes } = Helmet.SSR(app);
 
@@ -304,19 +316,21 @@ export class Router {
       </body>
     </html>`;
 
-    return new Response(html, {
+    const response = new Response(html, {
       headers: {
         "Content-Type": "text/html",
         "Server-Timing": this.#serverTime(request),
       },
     });
+    await this.cache?.put(request, response.clone());
+    return response;
   }
 
   #renderRss(request: Request, input: any) {
     return this.#renderXml(request, input, "application/rss+xml");
   }
 
-  #renderXml(
+  async #renderXml(
     request: Request,
     input: any,
     contentType = "application/xml",
@@ -324,13 +338,15 @@ export class Router {
   ) {
     const xmlDirective = '<?xml version="1.0" encoding="utf-8"?>';
     const xml = xmlDirective + renderXML(input);
-    return new Response(xml, {
+    const response = new Response(xml, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": cache,
         "Server-Timing": this.#serverTime(request),
       },
     });
+    await this.cache?.put(request, response.clone());
+    return response;
   }
 
   #serverTime(request: Request) {
@@ -339,9 +355,13 @@ export class Router {
     ).join(", ") ?? "noMetrics";
   }
 
-  #createMeasure(request: Request, name: string) {
+  #createMeasure(request: Request, name: string, init?: boolean) {
     const measure = new RequestMeasure(name);
-    this.#performance.get(request)?.push(measure);
+    if (init) {
+      this.#performance.set(request, [measure]);
+    } else {
+      this.#performance.get(request)?.push(measure);
+    }
     return measure;
   }
 }

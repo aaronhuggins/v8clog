@@ -124,3 +124,37 @@ export class WebApiCache {
     });
   }
 }
+
+export class WebApiCacheStorage {
+  #store = new Map<string, WebApiCache>();
+  async open(cacheName: string): Promise<WebApiCache> {
+    if (this.#store.has(cacheName)) {
+      return this.#store.get(cacheName)!;
+    }
+    const cache = new WebApiCache();
+    this.#store.set(cacheName, cache);
+    return await cache;
+  }
+  delete(cacheName: string): Promise<boolean> {
+    return Promise.resolve(this.#store.delete(cacheName));
+  }
+  has(cacheName: string): Promise<boolean> {
+    return Promise.resolve(this.#store.has(cacheName));
+  }
+  keys(): Promise<string[]> {
+    return Promise.resolve(Array.from(this.#store.keys()));
+  }
+  async match(
+    input: URL | RequestInfo,
+    options?: CacheQueryOptions | undefined,
+  ): Promise<Response | undefined> {
+    for (const cache of this.#store.values()) {
+      const response = await cache.match(input, options);
+      if (response) {
+        return response;
+      }
+    }
+  }
+}
+
+export const caches = new WebApiCacheStorage();
