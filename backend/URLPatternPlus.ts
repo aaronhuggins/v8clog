@@ -31,9 +31,15 @@ export class URLPatternPlus {
         ? new URL(input, baseURL).searchParams
         : new URLSearchParams(input.search);
       for (const param of pattern.searchParams) {
-        if (
-          !searchParams.has(param.name) &&
-          (param.modifier === MOD.REQUIRED || param.modifier === MOD.ONE_PLUS)
+        if (searchParams.has(param.name)) {
+          const results = searchParams.getAll(param.name);
+          for (const result of results) {
+            if (!result.match(param.pattern)) {
+              return false;
+            }
+          }
+        } else if (
+          param.modifier === MOD.REQUIRED || param.modifier === MOD.ONE_PLUS
         ) {
           return false;
         }
