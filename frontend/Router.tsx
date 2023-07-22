@@ -25,10 +25,12 @@ import { Release } from "./components/Release.tsx";
 import { BACKEND_TYPE } from "../backend/constants.ts";
 import { Sitemap } from "./components/Sitemap.tsx";
 import { URLPatternPlus } from "../backend/URLPatternPlus.ts";
+import { RequestPerformance } from "../backend/RequestPerformance.ts";
 
 const renderXML = createXMLRenderer(renderSSR);
-
 export class Router {
+  #performance = new WeakMap<Request, RequestPerformance[]>();
+  #v8clog = new V8ChangeLog(BACKEND_TYPE);
   #staticCache = new Map<string, StaticFile>();
   routes = new Map<RouteName, URLPatternPlus | boolean>([
     ["/", true],
@@ -86,18 +88,19 @@ export class Router {
   }
 
   respond() {
-    const v8clog = new V8ChangeLog(BACKEND_TYPE);
     return async (request: Request) => {
+      this.#performance.set(request, [new RequestPerformance("cpu")]);
       const route = this.#getRoute(request.url);
 
       switch (route.name) {
         case "/": {
-          const latest = await v8clog.getLatest();
-          const releases = await v8clog.getRange(
+          const latest = await this.#v8clog.getLatest();
+          const releases = await this.#v8clog.getRange(
             latest.milestone - 1,
             latest.milestone + 2,
           );
           return this.#renderHTML(
+            request,
             <App active="home">
               <Home origin={route.url.origin}>
                 {await Promise.all(
@@ -118,19 +121,21 @@ export class Router {
         }
         case "/about": {
           return this.#renderHTML(
+            request,
             <App active="about">
               <About origin={route.url.origin} />
             </App>,
           );
         }
         case "/tag": {
-          const releases = await v8clog.getByTag(route.params.tagname);
+          const releases = await this.#v8clog.getByTag(route.params.tagname);
           await Promise.all(releases.map(async (release) => {
             await release.getFeatures();
             await release.getChanges();
           }));
           if (route.params.feed === "rss.xml") {
             return this.#renderRss(
+              request,
               <RSS
                 origin={route.url.origin}
                 releases={releases}
@@ -142,13 +147,14 @@ export class Router {
             encodeURIComponent(route.params.tagname)
           }`;
           return this.#renderHTML(
+            request,
             <App active="clog">
               <Clog
                 origin={route.url.origin}
                 releases={releases}
                 tag={route.params.tagname}
                 limit={releases.length}
-                v8clog={v8clog}
+                v8clog={this.#v8clog}
                 canonicalPath={canonicalPath}
               />
             </App>,
@@ -157,17 +163,20 @@ export class Router {
         case "/clog": {
           if (route.params.version) {
             try {
-              const release = await v8clog.getRelease(route.params.version);
+              const release = await this.#v8clog.getRelease(
+                route.params.version,
+              );
               await release.getFeatures();
               await release.getChanges();
               await release.getTags();
 
               return this.#renderHTML(
+                request,
                 <App active="none">
                   <ClogEntry
                     release={release}
                     origin={route.url.origin}
-                    v8clog={v8clog}
+                    v8clog={this.#v8clog}
                   />
                 </App>,
               );
@@ -182,28 +191,29 @@ export class Router {
               const milestone = +(route.params.milestone ?? "0");
               canonicalPath =
                 `${canonicalPath}?milestone=${milestone}&limit=${limit}`;
-              releases = await v8clog.getRange(
+              releases = await this.#v8clog.getRange(
                 milestone - limit,
                 milestone,
               );
             } else {
-              const latest = await v8clog.getLatest();
+              const latest = await this.#v8clog.getLatest();
               releases = [
                 latest,
-                ...(await v8clog.getRange(
+                ...(await this.#v8clog.getRange(
                   latest.milestone - limit,
                   latest.milestone - 1,
                 )),
               ];
             }
             return this.#renderHTML(
+              request,
               <App active="clog">
                 <Clog
                   origin={route.url.origin}
                   releases={releases}
                   milestone={releases[0]?.milestone}
                   limit={limit}
-                  v8clog={v8clog}
+                  v8clog={this.#v8clog}
                   canonicalPath={canonicalPath}
                 />
               </App>,
@@ -215,25 +225,28 @@ export class Router {
           return new Response("", {
             headers: {
               "Content-Type": "text/plain",
+              "Server-Timing": this.#serverTime(request),
             },
           });
         }
         case "/rss.xml": {
-          await v8clog.getLatest();
-          const releases = await v8clog.getAllData(
-            v8clog.earliest,
-            v8clog.latest,
+          await this.#v8clog.getLatest();
+          const releases = await this.#v8clog.getAllData(
+            this.#v8clog.earliest,
+            this.#v8clog.latest,
           );
           return this.#renderRss(
+            request,
             <RSS origin={route.url.origin} releases={releases} />,
           );
         }
         case "/sitemap.xml": {
-          await v8clog.getLatest();
-          const tags = await v8clog.getTags();
+          await this.#v8clog.getLatest();
+          const tags = await this.#v8clog.getTags();
           return this.#renderXml(
+            request,
             <Sitemap
-              latest={v8clog.latest}
+              latest={this.#v8clog.latest}
               origin={route.url.origin}
               tags={tags.map((tag) => tag.name)}
             />,
@@ -243,7 +256,9 @@ export class Router {
           const file = this.#staticCache.get(route.url.href) ??
             new StaticFile(route.url);
           this.#staticCache.set(route.url.href, file);
-          if (file.isStatic) return file.response();
+          if (file.isStatic) {
+            return file.response(this.#performance.get(request));
+          }
           break;
         }
       }
@@ -252,7 +267,7 @@ export class Router {
     };
   }
 
-  #renderHTML(input: any) {
+  #renderHTML(request: Request, input: any) {
     const app = renderSSR(input);
     const { body, head, footer, attributes } = Helmet.SSR(app);
 
@@ -271,15 +286,17 @@ export class Router {
     return new Response(html, {
       headers: {
         "Content-Type": "text/html",
+        "Server-Timing": this.#serverTime(request),
       },
     });
   }
 
-  #renderRss(input: any) {
-    return this.#renderXml(input, "application/rss+xml");
+  #renderRss(request: Request, input: any) {
+    return this.#renderXml(request, input, "application/rss+xml");
   }
 
   #renderXml(
+    request: Request,
     input: any,
     contentType = "application/xml",
     cache = "no-cache, no-store",
@@ -290,8 +307,15 @@ export class Router {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": cache,
+        "Server-Timing": this.#serverTime(request),
       },
     });
+  }
+
+  #serverTime(request: Request) {
+    return this.#performance.get(request)?.map((measure) =>
+      measure.serverTime()
+    ).join(", ") ?? "noMetrics";
   }
 }
 

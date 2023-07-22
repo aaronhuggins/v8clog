@@ -1,3 +1,4 @@
+import { RequestPerformance } from "./RequestPerformance.ts";
 import { lookup } from "./deps.ts";
 
 const encoder = new TextEncoder();
@@ -16,7 +17,7 @@ export class StaticFile {
     this.path = "." + pathname;
   }
 
-  async response(): Promise<Response> {
+  async response(measures?: RequestPerformance[]): Promise<Response> {
     try {
       this.content = this.content ?? await Deno.readFile(this.path);
       this.contentType = this.contentType ?? lookup(this.path) ?? "text/plain";
@@ -31,6 +32,9 @@ export class StaticFile {
       status: 200,
       headers: {
         "Content-Type": this.contentType,
+        "Server-Timing": measures?.map((measure) =>
+          measure.serverTime()
+        ).join(", ") ?? "noMetrics",
       },
     });
   }
