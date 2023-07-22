@@ -1,4 +1,4 @@
-import { RequestPerformance } from "./RequestPerformance.ts";
+import { RequestMeasure } from "./RequestMeasure.ts";
 import { lookup } from "./deps.ts";
 
 const encoder = new TextEncoder();
@@ -17,7 +17,7 @@ export class StaticFile {
     this.path = "." + pathname;
   }
 
-  async response(measures?: RequestPerformance[]): Promise<Response> {
+  async response(measures?: RequestMeasure[]): Promise<Response> {
     try {
       this.content = this.content ?? await Deno.readFile(this.path);
       this.contentType = this.contentType ?? lookup(this.path) ?? "text/plain";
