@@ -54,7 +54,7 @@ export class Router {
   }
 
   #getRoute(request: Request) {
-    const measure = this.#createMeasure(request, "route");
+    const measure = this.#createMeasure(request, "Route");
     const url = new URL(request.url);
     const [_, second] = url.pathname.split("/");
     const name = "/" + second;
@@ -90,19 +90,19 @@ export class Router {
 
   respond() {
     return async (request: Request) => {
-      this.#performance.set(request, [new RequestMeasure("cpu")]);
+      this.#performance.set(request, [new RequestMeasure("CPU")]);
       const route = this.#getRoute(request);
 
       switch (route.name) {
         case "/": {
-          const measure = this.#createMeasure(request, "db");
+          const measure = this.#createMeasure(request, "Database");
           const latest = await this.#v8clog.getLatest();
           const releases = await this.#v8clog.getRange(
             latest.milestone - 1,
             latest.milestone + 2,
           );
           measure.finish();
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           return this.#renderHTML(
             request,
             <App active="home">
@@ -124,7 +124,7 @@ export class Router {
           );
         }
         case "/about": {
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           return this.#renderHTML(
             request,
             <App active="about">
@@ -133,14 +133,14 @@ export class Router {
           );
         }
         case "/tag": {
-          const measure = this.#createMeasure(request, "db");
+          const measure = this.#createMeasure(request, "Database");
           const releases = await this.#v8clog.getByTag(route.params.tagname);
           await Promise.all(releases.map(async (release) => {
             await release.getFeatures();
             await release.getChanges();
           }));
           measure.finish();
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           if (route.params.feed === "rss.xml") {
             return this.#renderRss(
               request,
@@ -171,7 +171,7 @@ export class Router {
         case "/clog": {
           if (route.params.version) {
             try {
-              const measure = this.#createMeasure(request, "db");
+              const measure = this.#createMeasure(request, "Database");
               const release = await this.#v8clog.getRelease(
                 route.params.version,
               );
@@ -179,7 +179,7 @@ export class Router {
               await release.getChanges();
               await release.getTags();
               measure.finish();
-              this.#createMeasure(request, "render");
+              this.#createMeasure(request, "Render");
               return this.#renderHTML(
                 request,
                 <App active="none">
@@ -194,7 +194,7 @@ export class Router {
               /* Missing or broken entries should redirect home. */
             }
           } else {
-            const measure = this.#createMeasure(request, "db");
+            const measure = this.#createMeasure(request, "Database");
             const limit = +(route.params.limit ?? "20");
             let canonicalPath = "/clog";
             let releases: V8Release[] = [];
@@ -217,7 +217,7 @@ export class Router {
               ];
             }
             measure.finish();
-            this.#createMeasure(request, "render");
+            this.#createMeasure(request, "Render");
             return this.#renderHTML(
               request,
               <App active="clog">
@@ -235,7 +235,7 @@ export class Router {
           break;
         }
         case "/robots.txt": {
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           return new Response("", {
             headers: {
               "Content-Type": "text/plain",
@@ -244,25 +244,25 @@ export class Router {
           });
         }
         case "/rss.xml": {
-          const measure = this.#createMeasure(request, "db");
+          const measure = this.#createMeasure(request, "Database");
           await this.#v8clog.getLatest();
           const releases = await this.#v8clog.getAllData(
             this.#v8clog.earliest,
             this.#v8clog.latest,
           );
           measure.finish();
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           return this.#renderRss(
             request,
             <RSS origin={route.url.origin} releases={releases} />,
           );
         }
         case "/sitemap.xml": {
-          const measure = this.#createMeasure(request, "db");
+          const measure = this.#createMeasure(request, "Database");
           await this.#v8clog.getLatest();
           const tags = await this.#v8clog.getTags();
           measure.finish();
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           return this.#renderXml(
             request,
             <Sitemap
@@ -273,7 +273,7 @@ export class Router {
           );
         }
         case "/static": {
-          this.#createMeasure(request, "render");
+          this.#createMeasure(request, "Render");
           const file = this.#staticCache.get(route.url.href) ??
             new StaticFile(route.url);
           this.#staticCache.set(route.url.href, file);
